@@ -2,7 +2,9 @@
 
 Because speedrunning code writing is fun™.
 
-Jokes aside, this project provides [Ministry of Health Malaysia COVID-19 data](https://github.com/MoH-Malaysia/covid19-public) as an API.
+Jokes aside, this project provides [Ministry of Health Malaysia COVID-19 data](https://github.com/MoH-Malaysia/covid19-public) data in API form.
+
+API specification will be defined soon™.
 
 # Features
 - [in progress] Pandemic data
