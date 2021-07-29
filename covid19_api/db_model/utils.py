@@ -195,3 +195,67 @@ def parse_tests_malaysia(filename):
             db_obj = TestsMalaysia(**temp_row)
             # TODO: complete persisting DB data
             print(db_obj)
+
+
+def parse_checkin_malaysia_time(filename):
+    with open(filename, newline='', encoding='utf8') as file:
+        csv_data = csv.DictReader(file)
+        for csv_row in csv_data:
+            row_with_data = [x.strip() for x, y in csv_row.items() if y.strip()]
+            version_number = CHECKIN_MALAYSIA_TIME_ROW_VERSION.get(hash(frozenset(row_with_data)))
+            temp_row = {k.strip(): v.strip() for k, v in csv_row.items() if k.strip() in row_with_data}
+            temp_row['row_version'] = version_number
+            conv_func: dict = DATA_CONVERSION_DICT['checkin_malaysia_time'][temp_row['row_version']]
+            for k, v in conv_func.items():
+                temp_row[k] = v(temp_row[k])
+            db_obj = CheckinMalaysiaTime(**temp_row)
+            # TODO: complete persisting DB data
+            print(db_obj)
+
+
+def parse_checkin_malaysia(filename):
+    with open(filename, newline='', encoding='utf8') as file:
+        csv_data = csv.DictReader(file)
+        for csv_row in csv_data:
+            row_with_data = [x.strip() for x, y in csv_row.items() if y.strip()]
+            version_number = CHECKIN_MALAYSIA_ROW_VERSION.get(hash(frozenset(row_with_data)))
+            temp_row = {k.strip(): v.strip() for k, v in csv_row.items() if k.strip() in row_with_data}
+            temp_row['row_version'] = version_number
+            conv_func: dict = DATA_CONVERSION_DICT['checkin_malaysia'][temp_row['row_version']]
+            for k, v in conv_func.items():
+                temp_row[k] = v(temp_row[k])
+            db_obj = CheckinMalaysia(**temp_row)
+            # TODO: complete persisting DB data
+            print(db_obj)
+
+
+def parse_checkin_state(filename):
+    with open(filename, newline='', encoding='utf8') as file:
+        csv_data = csv.DictReader(file)
+        for csv_row in csv_data:
+            row_with_data = [x.strip() for x, y in csv_row.items() if y.strip()]
+            version_number = CHECKIN_STATE_ROW_VERSION.get(hash(frozenset(row_with_data)))
+            temp_row = {k.strip(): v.strip() for k, v in csv_row.items() if k.strip() in row_with_data}
+            temp_row['row_version'] = version_number
+            conv_func: dict = DATA_CONVERSION_DICT['checkin_state'][temp_row['row_version']]
+            for k, v in conv_func.items():
+                temp_row[k] = v(temp_row[k])
+            db_obj = CheckinMalaysia(**temp_row)
+            # TODO: complete persisting DB data
+            print(db_obj)
+
+
+def parse_trace_malaysia(filename):
+    with open(filename, newline='', encoding='utf8') as file:
+        csv_data = csv.DictReader(file)
+        for csv_row in csv_data:
+            row_with_data = [x.strip() for x, y in csv_row.items() if y.strip()]
+            version_number = TRACE_MALAYSIA_ROW_VERSION.get(hash(frozenset(row_with_data)))
+            temp_row = {k.strip(): v.strip() for k, v in csv_row.items() if k.strip() in row_with_data}
+            temp_row['row_version'] = version_number
+            conv_func: dict = DATA_CONVERSION_DICT['trace_malaysia'][temp_row['row_version']]
+            for k, v in conv_func.items():
+                temp_row[k] = v(temp_row[k])
+            db_obj = TraceMalaysia(**temp_row)
+            # TODO: complete persisting DB data
+            print(db_obj)
