@@ -48,7 +48,8 @@ CHECKIN_STATE_ROW_VERSION = {
 }
 
 TRACE_MALAYSIA_ROW_VERSION = {
-    hash(frozenset(['date','casual_contacts','hide_large','hide_small'])): 1
+    hash(frozenset(['date','casual_contacts'])): 1,
+    hash(frozenset(['date','casual_contacts','hide_large','hide_small'])): 2
 }
 
 POPULATION_ROW_VERSION = {
