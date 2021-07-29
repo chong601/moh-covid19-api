@@ -55,16 +55,17 @@ DATA_CONVERSION_DICT = {
 def parse_cases_malaysia(filename):
     with open(filename, newline='', encoding='utf8') as file:
         csv_data = csv.DictReader(file)
-        count = 1
         for csv_row in csv_data:
             row_with_data = [x.strip() for x, y in csv_row.items() if y.strip()]
             version_number = CASES_MALAYSIA_ROW_VERSION.get(hash(frozenset(row_with_data)))
             temp_row = {k.strip(): v.strip() for k, v in csv_row.items() if k.strip() in row_with_data}
             temp_row['row_version'] = version_number
+            conv_func: dict = DATA_CONVERSION_DICT['cases_malaysia'][temp_row['row_version']]
+            for k, v in conv_func.items():
+                temp_row[k] = v(temp_row[k])
             db_obj = CasesMalaysia(**temp_row)
             # TODO: complete persisting DB data
             print(db_obj)
-            count += 1
 
 
 def parse_cases_state(filename):
@@ -75,6 +76,9 @@ def parse_cases_state(filename):
             version_number = CASES_STATE_ROW_VERSION.get(hash(frozenset(row_with_data)))
             temp_row = {k.strip(): v.strip() for k, v in csv_row.items() if k.strip() in row_with_data}
             temp_row['row_version'] = version_number
+            conv_func: dict = DATA_CONVERSION_DICT['cases_state'][temp_row['row_version']]
+            for k, v in conv_func.items():
+                temp_row[k] = v(temp_row[k])
             db_obj = CasesState(**temp_row)
             # TODO: complete persisting DB data
             print(db_obj)
@@ -89,6 +93,9 @@ def parse_clusters(filename):
             version_number = CLUSTERS_ROW_VERSION.get(hash(frozenset(row_with_data)))
             temp_row = {k.strip(): v.strip() for k, v in csv_row.items() if k.strip() in row_with_data}
             temp_row['row_version'] = version_number
+            conv_func: dict = DATA_CONVERSION_DICT['clusters'][temp_row['row_version']]
+            for k, v in conv_func.items():
+                temp_row[k] = v(temp_row[k])
             db_obj = Clusters(**temp_row)
             # TODO: complete persisting DB data
             print(db_obj)
@@ -102,6 +109,9 @@ def parse_deaths_malaysia(filename):
             version_number = DEATHS_MALAYSIA_ROW_VERSION.get(hash(frozenset(row_with_data)))
             temp_row = {k.strip(): v.strip() for k, v in csv_row.items() if k.strip() in row_with_data}
             temp_row['row_version'] = version_number
+            conv_func: dict = DATA_CONVERSION_DICT['deaths_malaysia'][temp_row['row_version']]
+            for k, v in conv_func.items():
+                temp_row[k] = v(temp_row[k])
             db_obj = DeathsMalaysia(**temp_row)
             # TODO: complete persisting DB data
             print(db_obj)
@@ -115,6 +125,9 @@ def parse_deaths_state(filename):
             version_number = DEATHS_STATE_ROW_VERSION.get(hash(frozenset(row_with_data)))
             temp_row = {k.strip(): v.strip() for k, v in csv_row.items() if k.strip() in row_with_data}
             temp_row['row_version'] = version_number
+            conv_func: dict = DATA_CONVERSION_DICT['deaths_state'][temp_row['row_version']]
+            for k, v in conv_func.items():
+                temp_row[k] = v(temp_row[k])
             db_obj = DeathsState(**temp_row)
             # TODO: complete persisting DB data
             print(db_obj)
@@ -128,6 +141,9 @@ def parse_hospital_by_state(filename):
             version_number = HOSPITAL_ROW_VERSION.get(hash(frozenset(row_with_data)))
             temp_row = {k.strip(): v.strip() for k, v in csv_row.items() if k.strip() in row_with_data}
             temp_row['row_version'] = version_number
+            conv_func: dict = DATA_CONVERSION_DICT['hospital'][temp_row['row_version']]
+            for k, v in conv_func.items():
+                temp_row[k] = v(temp_row[k])
             db_obj = HospitalByState(**temp_row)
             # TODO: complete persisting DB data
             print(db_obj)
@@ -141,6 +157,9 @@ def parse_icu_by_state(filename):
             version_number = ICU_ROW_VERSION.get(hash(frozenset(row_with_data)))
             temp_row = {k.strip(): v.strip() for k, v in csv_row.items() if k.strip() in row_with_data}
             temp_row['row_version'] = version_number
+            conv_func: dict = DATA_CONVERSION_DICT['icu'][temp_row['row_version']]
+            for k, v in conv_func.items():
+                temp_row[k] = v(temp_row[k])
             db_obj = ICUByState(**temp_row)
             # TODO: complete persisting DB data
             print(db_obj)
@@ -154,6 +173,9 @@ def parse_pkrc_by_state(filename):
             version_number = PKRC_ROW_VERSION.get(hash(frozenset(row_with_data)))
             temp_row = {k.strip(): v.strip() for k, v in csv_row.items() if k.strip() in row_with_data}
             temp_row['row_version'] = version_number
+            conv_func: dict = DATA_CONVERSION_DICT['pkrc'][temp_row['row_version']]
+            for k, v in conv_func.items():
+                temp_row[k] = v(temp_row[k])
             db_obj = PKRCByState(**temp_row)
             # TODO: complete persisting DB data
             print(db_obj)
@@ -167,6 +189,9 @@ def parse_tests_malaysia(filename):
             version_number = TESTS_MALAYSIA_ROW_VERSION.get(hash(frozenset(row_with_data)))
             temp_row = {k.strip(): v.strip() for k, v in csv_row.items() if k.strip() in row_with_data}
             temp_row['row_version'] = version_number
+            conv_func: dict = DATA_CONVERSION_DICT['tests_malaysia'][temp_row['row_version']]
+            for k, v in conv_func.items():
+                temp_row[k] = v(temp_row[k])
             db_obj = TestsMalaysia(**temp_row)
             # TODO: complete persisting DB data
             print(db_obj)
