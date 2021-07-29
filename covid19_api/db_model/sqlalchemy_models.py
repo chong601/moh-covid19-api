@@ -186,3 +186,132 @@ class TestsMalaysia(object):
                 setattr(self, 'rtk_ag', v)
                 continue
             setattr(self, k, v)
+
+
+@dataclass
+class CheckinMalaysiaTime(object):
+    __tablename__ = 'checkin_malaysia_time'
+
+    # This column definition is just cursed.
+    checkin_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Check-in UUID')
+    row_version: int = Column(Integer, comment='Row version')
+    date: PyDate = Column(SQLDate, comment='Reported date')
+    timeslot0: int = Column(Integer, comment='Time-slot')
+    timeslot1: int = Column(Integer, comment='Time-slot')
+    timeslot2: int = Column(Integer, comment='Time-slot')
+    timeslot3: int = Column(Integer, comment='Time-slot')
+    timeslot4: int = Column(Integer, comment='Time-slot')
+    timeslot5: int = Column(Integer, comment='Time-slot')
+    timeslot6: int = Column(Integer, comment='Time-slot')
+    timeslot7: int = Column(Integer, comment='Time-slot')
+    timeslot8: int = Column(Integer, comment='Time-slot')
+    timeslot9: int = Column(Integer, comment='Time-slot')
+    timeslot10: int = Column(Integer, comment='Time-slot')
+    timeslot11: int = Column(Integer, comment='Time-slot')
+    timeslot12: int = Column(Integer, comment='Time-slot')
+    timeslot13: int = Column(Integer, comment='Time-slot')
+    timeslot14: int = Column(Integer, comment='Time-slot')
+    timeslot15: int = Column(Integer, comment='Time-slot')
+    timeslot16: int = Column(Integer, comment='Time-slot')
+    timeslot17: int = Column(Integer, comment='Time-slot')
+    timeslot18: int = Column(Integer, comment='Time-slot')
+    timeslot19: int = Column(Integer, comment='Time-slot')
+    timeslot20: int = Column(Integer, comment='Time-slot')
+    timeslot21: int = Column(Integer, comment='Time-slot')
+    timeslot22: int = Column(Integer, comment='Time-slot')
+    timeslot23: int = Column(Integer, comment='Time-slot')
+    timeslot24: int = Column(Integer, comment='Time-slot')
+    timeslot25: int = Column(Integer, comment='Time-slot')
+    timeslot26: int = Column(Integer, comment='Time-slot')
+    timeslot27: int = Column(Integer, comment='Time-slot')
+    timeslot28: int = Column(Integer, comment='Time-slot')
+    timeslot29: int = Column(Integer, comment='Time-slot')
+    timeslot30: int = Column(Integer, comment='Time-slot')
+    timeslot31: int = Column(Integer, comment='Time-slot')
+    timeslot32: int = Column(Integer, comment='Time-slot')
+    timeslot33: int = Column(Integer, comment='Time-slot')
+    timeslot34: int = Column(Integer, comment='Time-slot')
+    timeslot35: int = Column(Integer, comment='Time-slot')
+    timeslot36: int = Column(Integer, comment='Time-slot')
+    timeslot37: int = Column(Integer, comment='Time-slot')
+    timeslot38: int = Column(Integer, comment='Time-slot')
+    timeslot39: int = Column(Integer, comment='Time-slot')
+    timeslot40: int = Column(Integer, comment='Time-slot')
+    timeslot41: int = Column(Integer, comment='Time-slot')
+    timeslot42: int = Column(Integer, comment='Time-slot')
+    timeslot43: int = Column(Integer, comment='Time-slot')
+    timeslot44: int = Column(Integer, comment='Time-slot')
+    timeslot45: int = Column(Integer, comment='Time-slot')
+    timeslot46: int = Column(Integer, comment='Time-slot')
+    timeslot47: int = Column(Integer, comment='Time-slot')
+
+    # Don't ask me why I did this, the data structure for checkin_malaysia_time tied my hands.
+    def __init__(self, **kwargs) -> None:
+        for k, v in kwargs.items():
+            if k == 'date' or k == 'row_version':
+                setattr(self, k, v)
+            elif int(k) >= 0 and int(k) <= 47:
+                setattr(self, f'timeslot{int(k)}', v)
+
+
+@dataclass
+class CheckinMalaysia(object):
+    __tablename__ = 'checkin_malaysia'
+
+    checkin_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Checkin UUID')
+    row_version: int = Column(Integer, comment='Row version')
+    date: PyDate = Column(SQLDate, comment='Reported date')
+    checkins: int = Column(Integer, comment='Number of checkins')
+    unique_ind: int = Column(Integer, comment='Number of unique individuals checking in')
+    unique_loc: int = Column(Integer, comment='Number of unique premises checked in')
+
+    def __init__(self, **kwargs) -> None:
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+
+@dataclass
+class CheckinState(object):
+    __tablename__ = 'tests_malaysia'
+
+    tests_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Deaths UUID')
+    row_version: int = Column(Integer, comment='Row version')
+    date: PyDate = Column(SQLDate, comment='Reported date')
+    state: str = Column(Text, comment='State name')
+    checkins: int = Column(Integer, comment='Number of checkins')
+    unique_ind: int = Column(Integer, comment='Number of unique individuals checking in')
+    unique_loc: int = Column(Integer, comment='Number of unique premises checked in')
+
+    def __init__(self, **kwargs) -> None:
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+
+@dataclass
+class TraceMalaysia(object):
+    __tablename__ = 'tests_malaysia'
+
+    tests_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Deaths UUID')
+    row_version: int = Column(Integer, comment='Row version')
+    date: PyDate = Column(SQLDate, comment='Reported date')
+    casual_contacts: int = Column(Integer, comment='Casual contact count')
+    hide_large: int = Column(Integer, comment='Large hotspot count identified by CPRC HIDE system')
+    hide_small: int = Column(Integer, comment='Small hotspot count identified by CPRC HIDE system')
+
+    def __init__(self, **kwargs) -> None:
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+
+@dataclass
+class Population(object):
+    __tablename__ = 'tests_malaysia'
+
+    tests_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Deaths UUID')
+    row_version: int = Column(Integer, comment='Row version')
+    date: PyDate = Column(SQLDate, comment='Reported date')
+    
+
+    def __init__(self, **kwargs) -> None:
+        for k, v in kwargs.items():
+            setattr(self, k, v)
