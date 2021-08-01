@@ -1,11 +1,12 @@
-from sqlalchemy import Text, Integer, Column, Date as SQLDate
+from sqlalchemy import Text, Integer, Column, Date as SQLDate, Index
 from uuid import uuid4
 from dataclasses import dataclass
 from datetime import date as PyDate
+from ..api import db
 
 
 @dataclass
-class CasesMalaysia(object):
+class CasesMalaysia(db.Model, object):
     __tablename__ = 'cases_malaysia'
 
     cases_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Cases UUID')
@@ -25,11 +26,12 @@ class CasesMalaysia(object):
             setattr(self, k, v)
 
 
+Index('cases_malaysia_csv_pkey', )
 @dataclass
-class CasesState(object):
+class CasesState(db.Model, object):
     __tablename__ = 'cases_state'
 
-    cases_uuid: str = Column(Text, primary_key=True, comment='Cases UUID')
+    cases_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Cases UUID')
     row_version: int = Column(Integer, comment="Row version")
     date: PyDate = Column(SQLDate, comment='Case date')
     state: str = Column(Text, comment='State name')
@@ -41,7 +43,7 @@ class CasesState(object):
 
 
 @dataclass
-class Clusters(object):
+class Clusters(db.Model, object):
     __tablename__ = 'clusters'
 
     cluster_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Cluster UUID')
@@ -67,7 +69,7 @@ class Clusters(object):
 
 
 @dataclass
-class DeathsMalaysia(object):
+class DeathsMalaysia(db.Model, object):
     __tablename__ = 'deaths_malaysia'
 
     death_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Deaths UUID')
@@ -81,7 +83,7 @@ class DeathsMalaysia(object):
 
 
 @dataclass
-class DeathsState(object):
+class DeathsState(db.Model, object):
     __tablename__ = 'deaths_state'
 
     death_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Deaths UUID')
@@ -96,7 +98,7 @@ class DeathsState(object):
 
 
 @dataclass
-class HospitalByState(object):
+class HospitalByState(db.Model, object):
     __tablename__ = 'hospital_by_state'
 
     hospital_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Deaths UUID')
@@ -121,7 +123,7 @@ class HospitalByState(object):
 
 
 @dataclass
-class ICUByState(object):
+class ICUByState(db.Model, object):
     __tablename__ = 'icu_by_state'
 
     icu_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Deaths UUID')
@@ -147,7 +149,7 @@ class ICUByState(object):
 
 
 @dataclass
-class PKRCByState(object):
+class PKRCByState(db.Model, object):
     __tablename__ = 'pkrc_by_state'
 
     pkrc_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Deaths UUID')
@@ -171,7 +173,7 @@ class PKRCByState(object):
 
 
 @dataclass
-class TestsMalaysia(object):
+class TestsMalaysia(db.Model, object):
     __tablename__ = 'tests_malaysia'
 
     tests_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Deaths UUID')
@@ -189,7 +191,7 @@ class TestsMalaysia(object):
 
 
 @dataclass
-class CheckinMalaysiaTime(object):
+class CheckinMalaysiaTime(db.Model, object):
     __tablename__ = 'checkin_malaysia_time'
 
     # This column definition is just cursed.
@@ -248,14 +250,11 @@ class CheckinMalaysiaTime(object):
     # Don't ask me why I did this, the data structure for checkin_malaysia_time tied my hands.
     def __init__(self, **kwargs) -> None:
         for k, v in kwargs.items():
-            if k == 'date' or k == 'row_version':
-                setattr(self, k, v)
-            elif int(k) >= 0 and int(k) <= 47:
-                setattr(self, f'timeslot{int(k)}', v)
+            setattr(self, k, v)
 
 
 @dataclass
-class CheckinMalaysia(object):
+class CheckinMalaysia(db.Model, object):
     __tablename__ = 'checkin_malaysia'
 
     checkin_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Checkin UUID')
@@ -271,8 +270,8 @@ class CheckinMalaysia(object):
 
 
 @dataclass
-class CheckinState(object):
-    __tablename__ = 'tests_malaysia'
+class CheckinState(db.Model, object):
+    __tablename__ = 'checkin_state'
 
     tests_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Deaths UUID')
     row_version: int = Column(Integer, comment='Row version')
@@ -288,8 +287,8 @@ class CheckinState(object):
 
 
 @dataclass
-class TraceMalaysia(object):
-    __tablename__ = 'tests_malaysia'
+class TraceMalaysia(db.Model, object):
+    __tablename__ = 'trace_malaysia'
 
     tests_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Deaths UUID')
     row_version: int = Column(Integer, comment='Row version')
@@ -304,13 +303,17 @@ class TraceMalaysia(object):
 
 
 @dataclass
-class Population(object):
-    __tablename__ = 'tests_malaysia'
+class Population(db.Model, object):
+    __tablename__ = 'population'
 
     tests_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Deaths UUID')
     row_version: int = Column(Integer, comment='Row version')
-    date: PyDate = Column(SQLDate, comment='Reported date')
-    
+    """'state','idxs','pop','pop_18','pop_60'"""
+    state: str = Column(Text, comment='State name')
+    idxs: int = Column(Integer, comment='Population index (possibly MOH internal)')
+    pop: int = Column(Integer, comment='Total state population')
+    pop_18: int = Column(Integer, comment='Total state population ages >= 18')
+    pop_60: int = Column(Integer, comment='Total state population ages >= 60')
 
     def __init__(self, **kwargs) -> None:
         for k, v in kwargs.items():
