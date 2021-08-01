@@ -6,25 +6,25 @@ from hashlib import sha1
 
 FILE_LIST = {
     'epidemic': [
-        # {'filename': 'cases_malaysia.csv', 'model': CasesMalaysia, 'primary_key': ['date']},
-        # {'filename': 'cases_state.csv', 'model': CasesState, 'primary_key': ['date', 'state']},
+        {'filename': 'cases_malaysia.csv', 'model': CasesMalaysia, 'primary_key': ['date']},
+        {'filename': 'cases_state.csv', 'model': CasesState, 'primary_key': ['date', 'state']},
         {'filename': 'clusters.csv', 'model': Clusters, 'primary_key': ['cluster']},
-        # {'filename': 'deaths_malaysia.csv', 'model': DeathsMalaysia, 'primary_key': ['date']},
-        # {'filename': 'deaths_state.csv', 'model': DeathsState, 'primary_key': ['date', 'state']},
-        # {'filename': 'hospital.csv', 'model': HospitalByState, 'primary_key': ['date', 'state']},
-        # {'filename': 'icu.csv', 'model': ICUByState, 'primary_key': ['date', 'state']},
-        # {'filename': 'pkrc.csv', 'model': PKRCByState, 'primary_key': ['date', 'state']},
-        # {'filename': 'tests_malaysia.csv', 'model': TestsMalaysia, 'primary_key': ['date']},
+        {'filename': 'deaths_malaysia.csv', 'model': DeathsMalaysia, 'primary_key': ['date']},
+        {'filename': 'deaths_state.csv', 'model': DeathsState, 'primary_key': ['date', 'state']},
+        {'filename': 'hospital.csv', 'model': HospitalByState, 'primary_key': ['date', 'state']},
+        {'filename': 'icu.csv', 'model': ICUByState, 'primary_key': ['date', 'state']},
+        {'filename': 'pkrc.csv', 'model': PKRCByState, 'primary_key': ['date', 'state']},
+        {'filename': 'tests_malaysia.csv', 'model': TestsMalaysia, 'primary_key': ['date']},
     ],
-    # 'mysejahtera': [
-    #     {'filename': 'checkin_malaysia_time.csv', 'model': CheckinMalaysiaTime, 'primary_key': ['date']},
-    #     {'filename': 'checkin_malaysia.csv', 'model': CheckinMalaysia, 'primary_key': ['date']},
-    #     {'filename': 'checkin_state.csv', 'model': CheckinState, 'primary_key': ['date', 'state']},
-    #     {'filename': 'trace_malaysia.csv', 'model': TraceMalaysia, 'primary_key': ['date']},
-    # ],
-    # 'static': [
-    #     {'filename': 'population.csv', 'model': Population, 'primary_key': ['idx']},
-    # ]
+    'mysejahtera': [
+        {'filename': 'checkin_malaysia_time.csv', 'model': CheckinMalaysiaTime, 'primary_key': ['date']},
+        {'filename': 'checkin_malaysia.csv', 'model': CheckinMalaysia, 'primary_key': ['date']},
+        {'filename': 'checkin_state.csv', 'model': CheckinState, 'primary_key': ['date', 'state']},
+        {'filename': 'trace_malaysia.csv', 'model': TraceMalaysia, 'primary_key': ['date']},
+    ],
+    'static': [
+        {'filename': 'population.csv', 'model': Population, 'primary_key': ['idx']},
+    ]
 }
 
 current_dir = os.path.join('covid19-public-main', 'new')
