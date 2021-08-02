@@ -1,7 +1,8 @@
 from sqlalchemy import Text, Integer, Column, Date as SQLDate, Index
 from uuid import uuid4
 from dataclasses import dataclass
-from datetime import date as PyDate
+from datetime import datetime, date as PyDate,
+from sqlalchemy.sql.sqltypes import DateTime
 from ..api import db
 
 
@@ -26,7 +27,6 @@ class CasesMalaysia(db.Model, object):
             setattr(self, k, v)
 
 
-Index('cases_malaysia_csv_pkey', )
 @dataclass
 class CasesState(db.Model, object):
     __tablename__ = 'cases_state'
@@ -198,6 +198,11 @@ class CheckinMalaysiaTime(db.Model, object):
     checkin_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Check-in UUID')
     row_version: int = Column(Integer, comment='Row version')
     date: PyDate = Column(SQLDate, comment='Reported date')
+    # Uhhhhh...
+    # This timeslot part should be in JSON, but I'm QUITE worried about DB support...
+    # I THINK this can be converted into text that will be casted into JSON during query,
+    # but that would mean relegating most of the work on Python which is less than nice IMO.
+    # Also that data conversion is kinda an ass to deal with as well, but we'll see.
     timeslot0: int = Column(Integer, comment='Time-slot')
     timeslot1: int = Column(Integer, comment='Time-slot')
     timeslot2: int = Column(Integer, comment='Time-slot')
@@ -247,7 +252,6 @@ class CheckinMalaysiaTime(db.Model, object):
     timeslot46: int = Column(Integer, comment='Time-slot')
     timeslot47: int = Column(Integer, comment='Time-slot')
 
-    # Don't ask me why I did this, the data structure for checkin_malaysia_time tied my hands.
     def __init__(self, **kwargs) -> None:
         for k, v in kwargs.items():
             setattr(self, k, v)
@@ -318,3 +322,37 @@ class Population(db.Model, object):
     def __init__(self, **kwargs) -> None:
         for k, v in kwargs.items():
             setattr(self, k, v)
+
+
+@dataclass
+class RepositoryUpdateStatus(db.Model, object):
+    __tablename__ = 'repository_update_status'
+
+    repository_id: str = Column(Text, primary_key=True, default=uuid4, comment='Repository UUID')
+    repository_name: str = Column(Text, nullable=False, comment='Repository name')
+    repository_category: str = Column(Text, nullable=False, comment='Repository category')
+    last_update: datetime = Column(DateTime, nullable=False, comment='Last successful update date and time')
+    repository_hash: str = Column(Text, nullable=False, comment='SHA-256 of the last successful hash')
+
+    def __init__(self, **kwargs) -> None:
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+
+# Column index definition
+Index('cases_malaysia_csv_pkey', CasesMalaysia.date)
+Index('cases_state_csv_pkey', CasesState.date, CasesState.state)
+Index('clusters_csv_pkey', Clusters.cluster, Clusters.date_announced)
+Index('deaths_malaysia_csv_pkey', DeathsMalaysia.date)
+Index('deaths_state_csv_pkey', DeathsState.date, DeathsState.state)
+Index('hospital_csv_pkey', HospitalByState.date, HospitalByState.state)
+Index('icu_csv_pkey', ICUByState.date, ICUByState.state)
+Index('pkrc_csv_pkey', PKRCByState.date, PKRCByState.state)
+Index('tests_malaysia_csv_pkey', TestsMalaysia.date)
+Index('checkin_malaysia_time_csv_pkey', CheckinMalaysiaTime.date)
+Index('checkin_malaysia_csv_pkey', CheckinMalaysia.date)
+Index('checkin_state_csv_pkey', CheckinState.date, CheckinState.state)
+Index('trace_malaysia_csv_pkey', TraceMalaysia.date)
+Index('population_state_idx', Population.state)
+Index('population_csv_pkey', Population.idxs)
+Index('repository_update_status_search_idx', RepositoryUpdateStatus.repository_name, RepositoryUpdateStatus.repository_category)
