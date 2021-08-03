@@ -1,7 +1,7 @@
 from sqlalchemy import Text, Integer, Column, Date as SQLDate, Index
 from uuid import uuid4
 from dataclasses import dataclass
-from datetime import datetime, date as PyDate,
+from datetime import datetime, date as PyDate
 from sqlalchemy.sql.sqltypes import DateTime
 from ..api import db
 
