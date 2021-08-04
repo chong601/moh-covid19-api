@@ -10,7 +10,7 @@ from ..api import db
 class CasesMalaysia(db.Model, object):
     __tablename__ = 'cases_malaysia'
 
-    cases_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Cases UUID')
+    row_id: int = Column(Integer, primary_key=True, autoincrement=False, comment='Case ID')
     row_version: int = Column(Integer, comment="Row version")
     date: PyDate = Column(SQLDate, comment='Case date')
     cases_new: int = Column(Integer, comment='New cases')
@@ -31,7 +31,7 @@ class CasesMalaysia(db.Model, object):
 class CasesState(db.Model, object):
     __tablename__ = 'cases_state'
 
-    cases_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Cases UUID')
+    row_id: int = Column(Integer, primary_key=True, autoincrement=False, comment='Case ID')
     row_version: int = Column(Integer, comment="Row version")
     date: PyDate = Column(SQLDate, comment='Case date')
     state: str = Column(Text, comment='State name')
@@ -46,7 +46,7 @@ class CasesState(db.Model, object):
 class Clusters(db.Model, object):
     __tablename__ = 'clusters'
 
-    cluster_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Cluster UUID')
+    row_id: int = Column(Integer, primary_key=True, autoincrement=False, comment='Cluster ID')
     row_version: int = Column(Integer, comment='Row version')
     cluster: str = Column(Text, comment='Cluster name')
     state: str = Column(Text, comment='State name')
@@ -72,7 +72,7 @@ class Clusters(db.Model, object):
 class DeathsMalaysia(db.Model, object):
     __tablename__ = 'deaths_malaysia'
 
-    death_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Deaths UUID')
+    row_id: int = Column(Integer, primary_key=True, autoincrement=False, comment='Deaths ID')
     row_version: int = Column(Integer, comment='Row version')
     date: PyDate = Column(SQLDate, comment='Reported date')
     deaths_new: int = Column(Integer, comment='New deaths for the reported date')
@@ -86,7 +86,7 @@ class DeathsMalaysia(db.Model, object):
 class DeathsState(db.Model, object):
     __tablename__ = 'deaths_state'
 
-    death_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Deaths UUID')
+    row_id: int = Column(Integer, primary_key=True, autoincrement=False, comment='Deaths ID')
     row_version: int = Column(Integer, comment='Row version')
     date: PyDate = Column(SQLDate, comment='Reported date')
     state: str = Column(Text, comment='State name')
@@ -101,7 +101,7 @@ class DeathsState(db.Model, object):
 class HospitalByState(db.Model, object):
     __tablename__ = 'hospital_by_state'
 
-    hospital_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Deaths UUID')
+    row_id: int = Column(Integer, primary_key=True, autoincrement=False, comment='Hospital ID')
     row_version: int = Column(Integer, comment='Row version')
     date: PyDate = Column(SQLDate, comment='Reported date')
     state: str = Column(Text, comment='State name')
@@ -126,7 +126,7 @@ class HospitalByState(db.Model, object):
 class ICUByState(db.Model, object):
     __tablename__ = 'icu_by_state'
 
-    icu_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Deaths UUID')
+    row_id: int = Column(Integer, primary_key=True, autoincrement=False, comment='ICU ID')
     row_version: int = Column(Integer, comment='Row version')
     date: PyDate = Column(SQLDate, comment='Reported date')
     state: str = Column(Text, comment='State name')
@@ -152,7 +152,7 @@ class ICUByState(db.Model, object):
 class PKRCByState(db.Model, object):
     __tablename__ = 'pkrc_by_state'
 
-    pkrc_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Deaths UUID')
+    row_id: int = Column(Integer, primary_key=True, autoincrement=False, comment='PKRC ID')
     row_version: int = Column(Integer, comment='Row version')
     date: PyDate = Column(SQLDate, comment='Reported date')
     state: str = Column(Text, comment='State name')
@@ -176,7 +176,7 @@ class PKRCByState(db.Model, object):
 class TestsMalaysia(db.Model, object):
     __tablename__ = 'tests_malaysia'
 
-    tests_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Deaths UUID')
+    row_id: int = Column(Integer, primary_key=True, autoincrement=False, comment='Tests UUID')
     row_version: int = Column(Integer, comment='Row version')
     date: PyDate = Column(SQLDate, comment='Reported date')
     rtk_ag: int = Column(Integer, comment='New deaths for the reported date')
@@ -195,7 +195,7 @@ class CheckinMalaysiaTime(db.Model, object):
     __tablename__ = 'checkin_malaysia_time'
 
     # This column definition is just cursed.
-    checkin_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Check-in UUID')
+    row_id: int = Column(Integer, primary_key=True, autoincrement=False, comment='Check-in ID')
     row_version: int = Column(Integer, comment='Row version')
     date: PyDate = Column(SQLDate, comment='Reported date')
     # Uhhhhh...
@@ -261,7 +261,7 @@ class CheckinMalaysiaTime(db.Model, object):
 class CheckinMalaysia(db.Model, object):
     __tablename__ = 'checkin_malaysia'
 
-    checkin_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Checkin UUID')
+    row_id: int = Column(Integer, primary_key=True, autoincrement=False, comment='Checkin ID')
     row_version: int = Column(Integer, comment='Row version')
     date: PyDate = Column(SQLDate, comment='Reported date')
     checkins: int = Column(Integer, comment='Number of checkins')
@@ -277,7 +277,7 @@ class CheckinMalaysia(db.Model, object):
 class CheckinState(db.Model, object):
     __tablename__ = 'checkin_state'
 
-    tests_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Deaths UUID')
+    row_id: int = Column(Integer, primary_key=True, autoincrement=False, comment='Checkin ID')
     row_version: int = Column(Integer, comment='Row version')
     date: PyDate = Column(SQLDate, comment='Reported date')
     state: str = Column(Text, comment='State name')
@@ -294,7 +294,7 @@ class CheckinState(db.Model, object):
 class TraceMalaysia(db.Model, object):
     __tablename__ = 'trace_malaysia'
 
-    tests_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Deaths UUID')
+    row_id: int = Column(Integer, primary_key=True, autoincrement=False, comment='Trace ID')
     row_version: int = Column(Integer, comment='Row version')
     date: PyDate = Column(SQLDate, comment='Reported date')
     casual_contacts: int = Column(Integer, comment='Casual contact count')
@@ -310,7 +310,7 @@ class TraceMalaysia(db.Model, object):
 class Population(db.Model, object):
     __tablename__ = 'population'
 
-    tests_uuid: str = Column(Text, primary_key=True, default=uuid4, comment='Deaths UUID')
+    row_id: int = Column(Integer, primary_key=True, autoincrement=False, comment='Population ID')
     row_version: int = Column(Integer, comment='Row version')
     """'state','idxs','pop','pop_18','pop_60'"""
     state: str = Column(Text, comment='State name')
