@@ -179,8 +179,8 @@ class TestsMalaysia(db.Model, object):
     row_id: int = Column(Integer, primary_key=True, autoincrement=False, comment='Tests UUID')
     row_version: int = Column(Integer, comment='Row version')
     date: PyDate = Column(SQLDate, comment='Reported date')
-    rtk_ag: int = Column(Integer, comment='New deaths for the reported date')
-    pcr: int = Column(Integer, comment='New deaths for the reported date')
+    rtk_ag: int = Column(Integer, comment='Total RTK-Ag tests performed')
+    pcr: int = Column(Integer, comment='Total RT-PCR tests performed')
 
     def __init__(self, **kwargs) -> None:
         for k, v in kwargs.items():
