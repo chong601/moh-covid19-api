@@ -1,7 +1,7 @@
-from covid19_api.db_model.sqlalchemy_models import *
 from covid19_api.db_model.utils import parse_csv
 import os
 from covid19_api.api import db
+from covid19_api.db_model.sqlalchemy_models import *
 from hashlib import sha256
 
 FILE_LIST = {
