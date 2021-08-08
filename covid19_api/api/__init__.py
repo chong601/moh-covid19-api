@@ -41,5 +41,8 @@ alpha_blueprint = Blueprint('api', __name__, url_prefix='/api/alpha')
 # Create Flask-RestX Api
 api = Api(alpha_blueprint, title='MOH COVID-19 REST API', version='alpha', description='Swagger interface for MOH COVID-19 REST API', doc='/ui/', ordered=True)
 
+# Add namespaces
+api.add_namespace(epidemic_api)
+
 # Register blueprint
 app.register_blueprint(alpha_blueprint)
