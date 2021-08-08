@@ -1,7 +1,7 @@
 from flask_restx import Namespace, Resource, fields, abort
 from flask_sqlalchemy import Pagination
 from sqlalchemy import func
-from covid19_api.db_model.sqlalchemy_models import CasesMalaysia, CasesState
+from covid19_api.db_model.sqlalchemy_models import CasesMalaysia, CasesState, DeathsMalaysia
 from covid19_api.api import db
 
 api = Namespace('epidemic', 'Epidemic data')
@@ -26,6 +26,13 @@ cases_state = api.model('cases_state', {
     'date': fields.Date(title='Date'),
     'state': fields.String(title='State name'),
     'cases_new': fields.Integer(title='New cases')
+})
+
+deaths_malaysia = api.model('deaths_malaysia', {
+    'row_id': fields.Integer(title='Deaths ID'),
+    'row_version': fields.Integer(title='Row version'),
+    'date': fields.Date(title='Reported date'),
+    'deaths_new': fields.Integer(title='New deaths for the reported date')
 })
 
 pagination_parser = api.parser()
@@ -147,3 +154,40 @@ class CasesStateByStateWithPagination(Resource):
         result = query.all()
         if result:
             return result
+
+@api.route('/deaths_malaysia')
+class DeathsMalaysiaWithPagination(Resource):
+
+    @api.expect(pagination_parser)
+    @api.marshal_with(deaths_malaysia, as_list=True, skip_none=True)
+    def get(self):
+
+        args: dict = pagination_parser.parse_args()
+        page = args.get('page') or 1
+        size = args.get('size') or 7
+
+        date_subquery = db.session.query(DeathsMalaysia.date)
+        query = db.session.query(DeathsMalaysia)
+
+        if not (args['page'] or args['size']):
+            date_subquery = date_subquery.order_by(DeathsMalaysia.date.desc()).limit(7)
+            query = query.filter(DeathsMalaysia.date.in_(date_subquery)).order_by(DeathsMalaysia.date)
+            return query.all()
+
+        result:Pagination = query.paginate(page, size, error_out=False)
+
+        if result.items:
+            return result.items
+        abort(404, f'Invalid page number {page}. Valid page numbers are between 1 to {result.pages}')
+
+
+@api.route('/deaths_malaysia/<string:date>')
+class DeathsMalaysiaByDate(Resource):
+
+    @api.marshal_with(deaths_malaysia)
+    def get(self, date):
+        query = db.session.query(DeathsMalaysia).filter(DeathsMalaysia.date == date)
+        if db.session.query(query.exists()).scalar():
+            result = query.first()
+            return result
+        abort(404, error=f"Date '{date}' is not found in database.")
