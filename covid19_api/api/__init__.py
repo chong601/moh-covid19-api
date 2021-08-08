@@ -43,6 +43,7 @@ api = Api(alpha_blueprint, title='MOH COVID-19 REST API', version='alpha', descr
 
 # Add namespaces
 api.add_namespace(epidemic_api)
+api.add_namespace(repository_api)
 
 # Register blueprint
 app.register_blueprint(alpha_blueprint)
