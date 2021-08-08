@@ -1,7 +1,7 @@
 from flask_restx import Namespace, Resource, fields, abort
 from flask_sqlalchemy import Pagination
 from sqlalchemy import func
-from covid19_api.db_model.sqlalchemy_models import CasesMalaysia, CasesState, DeathsMalaysia
+from covid19_api.db_model.sqlalchemy_models import CasesMalaysia, CasesState, DeathsMalaysia, DeathsState
 from covid19_api.api import db
 
 api = Namespace('epidemic', 'Epidemic data')
@@ -32,6 +32,14 @@ deaths_malaysia = api.model('deaths_malaysia', {
     'row_id': fields.Integer(title='Deaths ID'),
     'row_version': fields.Integer(title='Row version'),
     'date': fields.Date(title='Reported date'),
+    'deaths_new': fields.Integer(title='New deaths for the reported date')
+})
+
+deaths_state = api.model('deaths_state', {
+    'row_id': fields.Integer(title='Deaths ID'),
+    'row_version': fields.Integer(title='Row version'),
+    'date': fields.Date(title='Reported date'),
+    'state': fields.String(title='State name'),
     'deaths_new': fields.Integer(title='New deaths for the reported date')
 })
 
@@ -191,3 +199,77 @@ class DeathsMalaysiaByDate(Resource):
             result = query.first()
             return result
         abort(404, error=f"Date '{date}' is not found in database.")
+
+
+@api.route('/deaths_state')
+class DeathsStatewithPagination(Resource):
+
+    @api.expect(pagination_parser)
+    @api.marshal_with(deaths_state, as_list=True, skip_none=True)
+    def get(self):
+        args: dict = pagination_parser.parse_args()
+        page = args.get('page') or 1
+        # We don't use size against the final result, instead on the number of dates
+        size = args.get('size') or 7
+
+        date_subquery = db.session.query(DeathsState.date).group_by(DeathsState.date)
+        query = db.session.query(DeathsState)
+        state_count = db.session.query(DeathsState.state).distinct(DeathsState.state).count()
+
+        if not (args['page'] or args['size']):
+            date_subquery = date_subquery.order_by(DeathsState.date.desc()).limit(size)
+            query = query.filter(DeathsState.date.in_(date_subquery)).order_by(DeathsState.date, DeathsState.state)
+            return query.all()
+
+        query = query.filter(DeathsState.date.in_(date_subquery)).order_by(DeathsState.date, DeathsState.state)
+
+        size = size * state_count
+
+        result: Pagination = query.paginate(page, size, error_out=False)
+        if result.items:
+            return result.items
+        abort(404, f'Invalid page number {page}. Valid page numbers are between 1 to {result.pages}')
+
+
+@api.route('/deaths_state/<string:state>')
+class DeathsStateByStateWithPagination(Resource):
+
+    @api.expect(pagination_parser)
+    @api.marshal_with(deaths_state, as_list=True, skip_none=True)
+    def get(self, state):
+        args: dict = pagination_parser.parse_args()
+        page = args.get('page') or 1
+        size = args.get('size') or 7
+
+        date_subquery = db.session.query(DeathsState.date).group_by(DeathsState.date)
+        query = db.session.query(DeathsState)
+        state_count = db.session.query(DeathsState.state).distinct(DeathsState.state).count()
+
+        if not (args['page'] or args['size']):
+            date_subquery = date_subquery.order_by(DeathsState.date.desc()).limit(size)
+
+        if state != 'all':
+            state_exists = db.session.query(db.session.query(DeathsState.state).filter(DeathsState.state.ilike(f'%{state}')).exists()).scalar()
+            if state_exists:
+                query = query.filter(DeathsState.state.ilike(f'%{state}'), DeathsState.date.in_(date_subquery))
+            else:
+                abort(404, f"State name '{state}' not found in database")
+        else:
+            size = size * state_count
+            query = query.filter(DeathsState.date.in_(date_subquery))
+
+        result:Pagination = query.order_by(DeathsState.date).paginate(page, size, error_out=False)
+        if result.items:
+            return result.items
+
+
+@api.route('/deaths_state/<string:state>/<string:date>')
+class DeathsStateByStateByDate(Resource):
+
+    @api.marshal_with(deaths_state, skip_none=True)
+    def get(self, state, date):
+        query = db.session.query(DeathsState).filter(DeathsState.state.ilike(state), DeathsState.date == date)
+        if db.session.query(query.exists()).scalar():
+            result = query.first()
+            return result
+        abort(404, error=f"State '{state} with date '{date}' is not found in database.")
