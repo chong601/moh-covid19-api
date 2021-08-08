@@ -51,7 +51,6 @@ class CasesMalaysiaWithPagination(Resource):
             query = query.filter(CasesMalaysia.date.in_(date_subquery)).order_by(CasesMalaysia.date)
 
         result:Pagination = query.paginate(page, size, error_out=False)
-        print(result.query)
         if result.items:
             return result.items
         abort(404, f'Invalid page number {page}. Valid page numbers are between 1 to {result.pages}')
@@ -125,7 +124,6 @@ class CasesStateByDate(Resource):
             query = query.filter(CasesState.date.in_(date_subquery))
 
         result:Pagination = query.order_by(CasesState.date).paginate(page, size, error_out=False)
-        print(result.query)
         if result.items:
             return result.items
 
