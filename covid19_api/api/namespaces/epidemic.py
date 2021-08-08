@@ -1,7 +1,7 @@
 from flask_restx import Namespace, Resource, fields, abort
 from flask_sqlalchemy import Pagination
 from sqlalchemy import func
-from covid19_api.db_model.sqlalchemy_models import CasesMalaysia
+from covid19_api.db_model.sqlalchemy_models import CasesMalaysia, CasesState
 from covid19_api.api import db
 
 api = Namespace('epidemic', 'Epidemic data')
@@ -18,6 +18,14 @@ cases_malaysia = api.model('cases_malaysia', {
     'cluster_education': fields.Integer(title='Education new cases (not available with row_version=1)'),
     'cluster_detentionCentre': fields.Integer(title='Detention centre new cases (not available with row_version=1)'),
     'cluster_workplace': fields.Integer(title='Workplace new cases (not available with row_version=1)')
+})
+
+cases_state = api.model('cases_state', {
+    'row_id': fields.Integer(title='Row ID', description='ID of the row', example='1'),
+    'row_version': fields.Integer(title='Row version', description='The version of the row.'),
+    'date': fields.Date(title='Date'),
+    'state': fields.String(title='State name'),
+    'cases_new': fields.Integer(title='New cases')
 })
 
 pagination_parser = api.parser()
@@ -59,3 +67,85 @@ class CasesMalaysiaByDate(Resource):
             result = query.first()
             return result
         abort(404, error=f"Date '{date}' is not found in database.")
+
+
+@api.route('/cases_state')
+class CasesStateWithPagination(Resource):
+
+    @api.expect(pagination_parser)
+    @api.marshal_with(cases_state, skip_none=True)
+    def get(self):
+        args: dict = pagination_parser.parse_args()
+        page = args.get('page') or 1
+        # We don't use size against the final result, instead on the number of dates
+        size = args.get('size') or 7
+
+        date_subquery = db.session.query(CasesState.date).group_by(CasesState.date)
+        query = db.session.query(CasesState)
+        state_count = db.session.query(CasesState.state).distinct(CasesState.state).count()
+
+        if not (args['page'] or args['size']):
+            date_subquery = date_subquery.order_by(CasesState.date.desc()).limit(size)
+
+        query = query.filter(CasesState.date.in_(date_subquery)).order_by(CasesState.date, CasesState.state)
+
+        size = size * state_count
+
+        result: Pagination = query.paginate(page, size, error_out=False)
+        if result.items:
+            return result.items
+        abort(404, f'Invalid page number {page}. Valid page numbers are between 1 to {result.pages}')
+
+
+@api.route('/cases_state/<string:state>')
+class CasesStateByDate(Resource):
+
+    @api.expect(pagination_parser)
+    @api.marshal_with(cases_state, as_list=True, skip_none=True)
+    def get(self, state):
+        args: dict = pagination_parser.parse_args()
+        page = args.get('page') or 1
+        size = args.get('size') or 7
+
+        date_subquery = db.session.query(CasesState.date).group_by(CasesState.date)
+        query = db.session.query(CasesState)
+        state_count = db.session.query(CasesState.state).distinct(CasesState.state).count()
+
+        if not (args['page'] or args['size']):
+            date_subquery = date_subquery.order_by(CasesState.date.desc()).limit(size)
+
+        if state != 'all':
+            state_exists = db.session.query(db.session.query(CasesState.state).filter(CasesState.state.ilike(f'%{state}')).exists()).scalar()
+            if state_exists:
+                query = query.filter(CasesState.state.ilike(f'%{state}'), CasesState.date.in_(date_subquery))
+            else:
+                abort(404, f"State name '{state}' not found in database")
+        else:
+            size = size * state_count
+            query = query.filter(CasesState.date.in_(date_subquery))
+
+        result:Pagination = query.order_by(CasesState.date).paginate(page, size, error_out=False)
+        print(result.query)
+        if result.items:
+            return result.items
+
+
+@api.route('/cases_state/<string:state>/<string:date>')
+class CasesStateByStateWithPagination(Resource):
+
+    @api.marshal_with(cases_state, as_list=True, skip_none=True)
+    def get(self, state, date):
+        query = db.session.query(CasesState)
+
+        if state != 'all':
+            state_exists = db.session.query(db.session.query(CasesState.state).filter(CasesState.state.ilike(f'%{state}')).exists()).scalar()
+            if state_exists:
+                query = query.filter(CasesState.state.ilike(f'%{state}'), CasesState.date == date)
+            else:
+                abort(404, f"State name '{state}' not found in database")
+        else:
+            query = query.filter(CasesState.date == date)
+
+        result = query.all()
+        if result:
+            return result
