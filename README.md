@@ -4,13 +4,14 @@ Because speedrunning code writing is fun™. ~~And it took longer than what I th
 
 Jokes aside, this project provides [Ministry of Health Malaysia COVID-19 statistics](https://github.com/MoH-Malaysia/covid19-public) and [COVID-19 Immunisation Task Force (CITF) public vaccination](https://github.com/CITF-Malaysia/citf-public) data in API form.
 
-API specification will be defined soon™.
+URL to the API will be defined soon™.
+
 # Things to work on
 - [phase 2 in-progress] Better database model (the source data makes it difficult to build one)
 - [in progress] Complete the initial REST API implementation
-- [x] Make CSV data import less cancerous (it's pretty cancerific)
+- ~~Make CSV data import less cancerous (it's pretty cancerific)~~ Done
 - Code cleanups
-- Make PR to [official Ministry of Health Malaysia COVID-19 repository](https://github.com/MoH-Malaysia/covid19-public) to promote this project!
+- Make PR to [official Ministry of Health Malaysia COVID-19 repository](https://github.com/MoH-Malaysia/covid19-public) and [official CITF National Covid-​19 Immunisation Programme repository](https://github.com/CITF-Malaysia/citf-public) to promote this project!
 
 # Available APIs
 ### Epidemic data
