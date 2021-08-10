@@ -1,7 +1,6 @@
 from flask_restx import Namespace, Resource, fields, abort
 from flask_sqlalchemy import Pagination
-from sqlalchemy import func
-from covid19_api.db_model.sqlalchemy_models import CasesMalaysia, CasesState, DeathsMalaysia, DeathsState
+from covid19_api.db_model.sqlalchemy_models import CasesMalaysia, CasesState, DeathsMalaysia, DeathsState, HospitalByState, ICUByState, PKRCByState, TestsMalaysia
 from covid19_api.api import db
 
 api = Namespace('epidemic', 'Epidemic data')
@@ -41,6 +40,68 @@ deaths_state = api.model('deaths_state', {
     'date': fields.Date(title='Reported date'),
     'state': fields.String(title='State name'),
     'deaths_new': fields.Integer(title='New deaths for the reported date')
+})
+
+hospital = api.model('hospital', {
+    'row_id': fields.Integer(title='Deaths ID'),
+    'row_version': fields.Integer(title='Row version'),
+    'date': fields.Date(title='Reported date'),
+    'state': fields.String(title='State name'),
+    'beds': fields.Integer(title='Total available hospital beds'),
+    'beds_noncrit': fields.Integer(title='Total available hospital beds for non-critical care'),
+    'admitted_pui': fields.Integer(title='Total admitted persons under investigation'),
+    'admitted_covid': fields.Integer(title='Total admitted persons with COVID-19'),
+    'admitted_total': fields.Integer(title='Total admissions'),
+    'discharged_pui': fields.Integer(title='Total discharged persons under investigation'),
+    'discharged_covid': fields.Integer(title='Total discharged persons with COVID-19'),
+    'discharged_total': fields.Integer(title='Total discharges'),
+    'hosp_pui': fields.Integer(title='Total hospitalised persons under investigation'),
+    'hosp_covid': fields.Integer(title='Total hospitalised COVID-19 patients'),
+    'hosp_noncovid': fields.Integer(title='Total non-COVID patients')
+})
+
+icu = api.model('icu', {
+    'row_id': fields.Integer(title='Deaths ID'),
+    'row_version': fields.Integer(title='Row version'),
+    'date': fields.Date(title='Reported date'),
+    'state': fields.String(title='State name'),
+    'bed_icu': fields.Integer(title='Gazetted ICU beds'),
+    'bed_icu_rep': fields.Integer(title='Total ICU beds for Anaesthesiology & Critical Care departments'),
+    'bed_icu_total': fields.Integer(title='Total ICU beds'),
+    'bed_icu_covid': fields.Integer(title='Total ICU beds dedicated for COVID-19'),
+    'vent': fields.Integer(title='Total available ventilators'),
+    'vent_port': fields.Integer(title='Total available portable ventilators'),
+    'icu_covid': fields.Integer(title='Total number of COVID individuals under ICU care'),
+    'icu_pui': fields.Integer(title='Total number of PUI individuals under ICU care'),
+    'icu_noncovid': fields.Integer(title='Total number of non-COVID individuals under ICU care'),
+    'vent_covid': fields.Integer(title='Total number of COVID individuals that require ventilator'),
+    'vent_pui': fields.Integer(title='Total number of PUI individuals that require ventilator'),
+    'vent_noncovid': fields.Integer(title='Total number of non-COVID individuals that require ventilator')
+})
+
+pkrc = api.model('pkrc', {
+    'row_id': fields.Integer(title='Deaths ID'),
+    'row_version': fields.Integer(title='Row version'),
+    'date': fields.Date(title='Reported date'),
+    'state': fields.String(title='State name'),
+    'beds': fields.Integer(title='Total available PKRC beds'),
+    'admitted_pui': fields.Integer(title='Total admitted persons under investigation'),
+    'admitted_covid': fields.Integer(title='Total admitted persons with COVID-19'),
+    'admitted_total': fields.Integer(title='Total admissions'),
+    'discharged_pui': fields.Integer(title='Total discharged persons under investigation'),
+    'discharged_covid': fields.Integer(title='Total discharged persons with COVID-19'),
+    'discharged_total': fields.Integer(title='Total discharges'),
+    'pkrc_pui': fields.Integer(title='Total hospitalised persons under investigation'),
+    'pkrc_covid': fields.Integer(title='Total hospitalised COVID-19 patients'),
+    'pkrc_noncovid': fields.Integer(title='Total non-COVID patients')
+})
+
+tests_malaysia = api.model('tests_malaysia', {
+    'row_id': fields.Integer(title='Deaths ID'),
+    'row_version': fields.Integer(title='Row version'),
+    'date': fields.Date(title='Reported date'),
+    'rtk_ag': fields.Integer(title='Total RTK-Ag tests performed'),
+    'pcr': fields.Integer(title='Total RT-PCR tests performed')
 })
 
 pagination_parser = api.parser()
@@ -163,6 +224,7 @@ class CasesStateByStateWithPagination(Resource):
         if result:
             return result
 
+
 @api.route('/deaths_malaysia')
 class DeathsMalaysiaWithPagination(Resource):
 
@@ -273,3 +335,405 @@ class DeathsStateByStateByDate(Resource):
             result = query.first()
             return result
         abort(404, error=f"State '{state} with date '{date}' is not found in database.")
+
+
+@api.route('/hospital')
+class HospitalWithPagination(Resource):
+
+    @api.expect(pagination_parser)
+    @api.marshal_with(hospital)
+    def get(self):
+        args: dict = pagination_parser.parse_args()
+        page = args.get('page') or 1
+        # We don't use size against the final result, instead on the number of dates
+        size = args.get('size') or 7
+
+        date_subquery = db.session.query(HospitalByState.date).group_by(HospitalByState.date).order_by(HospitalByState.date)
+        query = db.session.query(HospitalByState)
+
+        if not (args['page'] or args['size']):
+            date_subquery = date_subquery.order_by(HospitalByState.date.desc()).limit(7)
+            query = query.filter(HospitalByState.date.in_(date_subquery)).order_by(HospitalByState.date, HospitalByState.state)
+            return query.all()
+
+        # Ugh. Apparently Putrajaya didn't have hospital data till 2021-05-11, so we need to do 
+        # some crappy dance around this to make it "work"
+
+        # Get dates based on the pagination values
+        date_subquery: Pagination = date_subquery.paginate(page, size, error_out=False)
+        # Get all dates returned by the pagination
+        dates = [date[0] for date in date_subquery.items]
+
+        # Future project: implement pagination logic and expose it to end user
+        attr = {a: getattr(date_subquery, a) for a in dir(date_subquery) if not a.startswith('__') and not callable(getattr(date_subquery, a))}
+
+        if 'query' in attr:
+            compile = attr['query'].statement.compile()
+            attr.update({'query_string': compile.string})
+            attr.update({'query_param': compile.params})
+            del attr['query']
+
+        # Query the database with the rows selected from pagination
+        # Think of this as a subquery-ish method, except that the query is done separately like:
+        # 
+        # pagination_result = select date from hospital_by_state group by date order by date offset (SELECT (page_number - 1) * size) limit size;
+        # query = select * from hospital_by_state where date in (pagination.result);
+        query = query.filter(HospitalByState.date.in_(dates)).order_by(HospitalByState.date, HospitalByState.state)
+        result = query.all()
+
+        if result:
+            return result
+        abort(404, f'Invalid page number {page}. Valid page numbers are between 1 to {date_subquery.pages}')
+
+
+@api.route('/hospital/<string:state>')
+class HospitalByStateWithPagination(Resource):
+
+    @api.expect(pagination_parser)
+    @api.marshal_with(hospital, as_list=True, skip_none=True)
+    def get(self, state=None):
+        args: dict = pagination_parser.parse_args()
+        page = args.get('page') or 1
+        size = args.get('size') or 7
+
+        date_subquery = db.session.query(HospitalByState.date).group_by(HospitalByState.date)
+        query = db.session.query(HospitalByState)
+
+        if state != 'all':
+            state_exists = db.session.query(db.session.query(HospitalByState.state).filter(HospitalByState.state.ilike(f'%{state}')).exists()).scalar()
+            if state_exists:
+                query = query.filter(HospitalByState.state.ilike(f'%{state}'))
+            else:
+                abort(404, f"State name '{state}' not found in database")
+
+        if not (args['page'] or args['size']):
+            date_subquery = date_subquery.order_by(HospitalByState.date.desc()).limit(7)
+            query = query.filter(HospitalByState.date.in_(date_subquery)).order_by(HospitalByState.date, HospitalByState.state)
+            return query.all()
+
+        # Ugh. Apparently Putrajaya didn't have hospital data till 2021-05-11, so we need to do 
+        # some crappy dance around this to make it "work"
+        # Get dates based on the pagination values
+
+        date_subquery = date_subquery.order_by(HospitalByState.date)
+        date_result: Pagination = date_subquery.paginate(page, size, error_out=False)
+        # Get all dates returned by the pagination
+        dates = [date[0] for date in date_result.items]
+
+        # Future project: implement pagination logic and expose it to end user
+        attr = {a: getattr(date_result, a) for a in dir(date_result) if not a.startswith('__') and not callable(getattr(date_result, a))}
+
+        if 'query' in attr:
+            compile = attr['query'].statement.compile()
+            attr.update({'query_string': compile.string})
+            attr.update({'query_param': compile.params})
+            del attr['query']
+
+        # Query the database with the rows selected from pagination
+        # Think of this as a subquery-ish method, except that the query is done separately like:
+        #
+        # pagination_result = select date from hospital_by_state group by date order by date offset (SELECT (page_number - 1) * size) limit size;
+        # query = select * from hospital_by_state where date in (pagination.result);
+        query = query.filter(HospitalByState.date.in_(dates)).order_by(HospitalByState.date, HospitalByState.state)
+        result = query.all()
+
+        if result:
+            return result
+        abort(404, f'Invalid page number {page}. Valid page numbers are between 1 to {date_result.pages}')
+
+
+@api.route('/hospital/<string:state>/<string:date>')
+class HospitalByStateByDateWithPagination(Resource):
+
+    @api.marshal_with(hospital, skip_none=True)
+    def get(self, state=None, date=None):
+        query = db.session.query(HospitalByState)
+        if state == 'all':
+            query = query.filter(HospitalByState.date == date)
+            return query.all()
+        else:
+            query = query.filter(HospitalByState.state.ilike(state), HospitalByState.date == date)
+            if db.session.query(query.exists()).scalar():
+                result = query.first()
+                return result
+        abort(404, error=f"State '{state} with date '{date}' is not found in database.")
+
+
+@api.route('/icu')
+class ICUWithPagination(Resource):
+
+    @api.expect(pagination_parser)
+    @api.marshal_with(icu, as_list=True, skip_none=True)
+    def get(self):
+        args: dict = pagination_parser.parse_args()
+        page = args.get('page') or 1
+        # We don't use size against the final result, instead on the number of dates
+        size = args.get('size') or 7
+
+        date_subquery = db.session.query(ICUByState.date).group_by(ICUByState.date).order_by(ICUByState.date)
+        query = db.session.query(ICUByState)
+
+        if not (args['page'] or args['size']):
+            date_subquery = date_subquery.order_by(ICUByState.date.desc()).limit(7)
+            query = query.filter(ICUByState.date.in_(date_subquery)).order_by(ICUByState.date, ICUByState.state)
+            return query.all()
+
+        # Ugh. Apparently Putrajaya didn't have hospital data till 2021-05-11, so we need to do 
+        # some crappy dance around this to make it "work"
+
+        # Get dates based on the pagination values
+        date_subquery: Pagination = date_subquery.paginate(page, size, error_out=False)
+        # Get all dates returned by the pagination
+        dates = [date[0] for date in date_subquery.items]
+
+        # Future project: implement pagination logic and expose it to end user
+        attr = {a: getattr(date_subquery, a) for a in dir(date_subquery) if not a.startswith('__') and not callable(getattr(date_subquery, a))}
+
+        if 'query' in attr:
+            compile = attr['query'].statement.compile()
+            attr.update({'query_string': compile.string})
+            attr.update({'query_param': compile.params})
+            del attr['query']
+
+        # Query the database with the rows selected from pagination
+        # Think of this as a subquery-ish method, except that the query is done separately like:
+        # 
+        # pagination_result = select date from hospital_by_state group by date order by date offset (SELECT (page_number - 1) * size) limit size;
+        # query = select * from hospital_by_state where date in (pagination.result);
+        query = query.filter(ICUByState.date.in_(dates)).order_by(ICUByState.date, ICUByState.state)
+        result = query.all()
+
+        if result:
+            return result
+        abort(404, f'Invalid page number {page}. Valid page numbers are between 1 to {date_subquery.pages}')
+
+
+@api.route('/icu/<string:state>')
+class ICUByStateWithPagination(Resource):
+
+    @api.expect(pagination_parser)
+    @api.marshal_with(icu, as_list=True, skip_none=True)
+    def get(self, state=None):
+        args: dict = pagination_parser.parse_args()
+        page = args.get('page') or 1
+        size = args.get('size') or 7
+
+        date_subquery = db.session.query(ICUByState.date).group_by(ICUByState.date)
+        query = db.session.query(ICUByState)
+
+        if state != 'all':
+            state_exists = db.session.query(db.session.query(ICUByState.state).filter(ICUByState.state.ilike(f'%{state}')).exists()).scalar()
+            if state_exists:
+                query = query.filter(ICUByState.state.ilike(f'%{state}'))
+            else:
+                abort(404, f"State name '{state}' not found in database")
+
+        if not (args['page'] or args['size']):
+            date_subquery = date_subquery.order_by(ICUByState.date.desc()).limit(7)
+            query = query.filter(ICUByState.date.in_(date_subquery)).order_by(ICUByState.date, ICUByState.state)
+            return query.all()
+
+        # Ugh. Apparently Putrajaya didn't have hospital data till 2021-05-11, so we need to do 
+        # some crappy dance around this to make it "work"
+        # Get dates based on the pagination values
+
+        date_subquery = date_subquery.order_by(ICUByState.date)
+        date_result: Pagination = date_subquery.paginate(page, size, error_out=False)
+        # Get all dates returned by the pagination
+        dates = [date[0] for date in date_result.items]
+
+        # Future project: implement pagination logic and expose it to end user
+        attr = {a: getattr(date_result, a) for a in dir(date_result) if not a.startswith('__') and not callable(getattr(date_result, a))}
+
+        if 'query' in attr:
+            compile = attr['query'].statement.compile()
+            attr.update({'query_string': compile.string})
+            attr.update({'query_param': compile.params})
+            del attr['query']
+
+        # Query the database with the rows selected from pagination
+        # Think of this as a subquery-ish method, except that the query is done separately like:
+        #
+        # pagination_result = select date from hospital_by_state group by date order by date offset (SELECT (page_number - 1) * size) limit size;
+        # query = select * from hospital_by_state where date in (pagination.result);
+        query = query.filter(ICUByState.date.in_(dates)).order_by(ICUByState.date, ICUByState.state)
+        result = query.all()
+
+        if result:
+            return result
+        abort(404, f'Invalid page number {page}. Valid page numbers are between 1 to {date_result.pages}')
+
+
+@api.route('/icu/<string:state>/<string:date>')
+class ICUByStateByDateWithPagination(Resource):
+
+    @api.marshal_with(icu, as_list=True, skip_none=True)
+    def get(self, state=None, date=None):
+        query = db.session.query(ICUByState)
+        if state == 'all':
+            query = query.filter(ICUByState.date == date)
+            return query.all()
+        else:
+            query = query.filter(ICUByState.state.ilike(state), ICUByState.date == date)
+            if db.session.query(query.exists()).scalar():
+                result = query.first()
+                return result
+        abort(404, error=f"State '{state} with date '{date}' is not found in database.")
+
+
+@api.route('/pkrc')
+class PKRCWithPagination(Resource):
+
+    @api.expect(pagination_parser)
+    @api.marshal_with(pkrc, as_list=True, skip_none=True)
+    def get(self):
+        args: dict = pagination_parser.parse_args()
+        page = args.get('page') or 1
+        # We don't use size against the final result, instead on the number of dates
+        size = args.get('size') or 7
+
+        date_subquery = db.session.query(PKRCByState.date).group_by(PKRCByState.date).order_by(PKRCByState.date)
+        query = db.session.query(PKRCByState)
+
+        if not (args['page'] or args['size']):
+            date_subquery = date_subquery.order_by(PKRCByState.date.desc()).limit(7)
+            query = query.filter(PKRCByState.date.in_(date_subquery)).order_by(PKRCByState.date, PKRCByState.state)
+            return query.all()
+
+        # Ugh. Apparently Putrajaya didn't have hospital data till 2021-05-11, so we need to do 
+        # some crappy dance around this to make it "work"
+
+        # Get dates based on the pagination values
+        date_subquery: Pagination = date_subquery.paginate(page, size, error_out=False)
+        # Get all dates returned by the pagination
+        dates = [date[0] for date in date_subquery.items]
+
+        # Future project: implement pagination logic and expose it to end user
+        attr = {a: getattr(date_subquery, a) for a in dir(date_subquery) if not a.startswith('__') and not callable(getattr(date_subquery, a))}
+
+        if 'query' in attr:
+            compile = attr['query'].statement.compile()
+            attr.update({'query_string': compile.string})
+            attr.update({'query_param': compile.params})
+            del attr['query']
+
+        # Query the database with the rows selected from pagination
+        # Think of this as a subquery-ish method, except that the query is done separately like:
+        # 
+        # pagination_result = select date from hospital_by_state group by date order by date offset (SELECT (page_number - 1) * size) limit size;
+        # query = select * from hospital_by_state where date in (pagination.result);
+        query = query.filter(PKRCByState.date.in_(dates)).order_by(PKRCByState.date, PKRCByState.state)
+        result = query.all()
+
+        if result:
+            return result
+        abort(404, f'Invalid page number {page}. Valid page numbers are between 1 to {date_subquery.pages}')
+
+
+@api.route('/pkrc/<string:state>')
+class PKRCByStateWithPagination(Resource):
+
+    @api.expect(pagination_parser)
+    @api.marshal_with(pkrc, as_list=True, skip_none=True)
+    def get(self, state=None):
+        args: dict = pagination_parser.parse_args()
+        page = args.get('page') or 1
+        size = args.get('size') or 7
+
+        date_subquery = db.session.query(PKRCByState.date).group_by(PKRCByState.date)
+        query = db.session.query(PKRCByState)
+
+        if state != 'all':
+            state_exists = db.session.query(db.session.query(PKRCByState.state).filter(PKRCByState.state.ilike(f'%{state}')).exists()).scalar()
+            if state_exists:
+                query = query.filter(PKRCByState.state.ilike(f'%{state}'))
+            else:
+                abort(404, f"State name '{state}' not found in database")
+
+        if not (args['page'] or args['size']):
+            date_subquery = date_subquery.order_by(PKRCByState.date.desc()).limit(7)
+            query = query.filter(PKRCByState.date.in_(date_subquery)).order_by(PKRCByState.date, PKRCByState.state)
+            return query.all()
+
+        # Ugh. Apparently Putrajaya didn't have hospital data till 2021-05-11, so we need to do 
+        # some crappy dance around this to make it "work"
+        # Get dates based on the pagination values
+
+        date_subquery = date_subquery.order_by(PKRCByState.date)
+        date_result: Pagination = date_subquery.paginate(page, size, error_out=False)
+        # Get all dates returned by the pagination
+        dates = [date[0] for date in date_result.items]
+
+        # Future project: implement pagination logic and expose it to end user
+        attr = {a: getattr(date_result, a) for a in dir(date_result) if not a.startswith('__') and not callable(getattr(date_result, a))}
+
+        if 'query' in attr:
+            compile = attr['query'].statement.compile()
+            attr.update({'query_string': compile.string})
+            attr.update({'query_param': compile.params})
+            del attr['query']
+
+        # Query the database with the rows selected from pagination
+        # Think of this as a subquery-ish method, except that the query is done separately like:
+        #
+        # pagination_result = select date from hospital_by_state group by date order by date offset (SELECT (page_number - 1) * size) limit size;
+        # query = select * from hospital_by_state where date in (pagination.result);
+        query = query.filter(PKRCByState.date.in_(dates)).order_by(PKRCByState.date, PKRCByState.state)
+        result = query.all()
+
+        if result:
+            return result
+        abort(404, f'Invalid page number {page}. Valid page numbers are between 1 to {date_result.pages}')
+
+
+@api.route('/pkrc/<string:state>/<string:date>')
+class PKRCByStateByDateWithPagination(Resource):
+
+    @api.marshal_with(icu, as_list=True, skip_none=True)
+    def get(self, state=None, date=None):
+        query = db.session.query(PKRCByState)
+        if state == 'all':
+            query = query.filter(PKRCByState.date == date)
+            return query.all()
+        else:
+            query = query.filter(PKRCByState.state.ilike(state), PKRCByState.date == date)
+            if db.session.query(query.exists()).scalar():
+                result = query.first()
+                return result
+        abort(404, error=f"State '{state} with date '{date}' is not found in database.")
+
+
+@api.route('/tests_malaysia')
+class TestsMalaysiaWithPagination(Resource):
+
+    @api.expect(pagination_parser)
+    @api.marshal_with(tests_malaysia, as_list=True, skip_none=True)
+    def get(self):
+        args: dict = pagination_parser.parse_args()
+        page = args.get('page') or 1
+        size = args.get('size') or 7
+
+        date_subquery = db.session.query(TestsMalaysia.date)
+        query = db.session.query(TestsMalaysia)
+
+        if not (args['page'] or args['size']):
+            date_subquery = date_subquery.order_by(TestsMalaysia.date.desc()).limit(7)
+            query = query.filter(TestsMalaysia.date.in_(date_subquery)).order_by(TestsMalaysia.date)
+            return query.all()
+
+        result:Pagination = query.paginate(page, size, error_out=False)
+        if result.items:
+            return result.items
+        abort(404, f'Invalid page number {page}. Valid page numbers are between 1 to {result.pages}')
+
+
+@api.route('/tests_malaysia/<string:date>')
+class TestsMalaysiaByDate(Resource):
+
+    @api.marshal_with(tests_malaysia, skip_none=True)
+    def get(self, date):
+        query = db.session.query(TestsMalaysia).filter(TestsMalaysia.date == date)
+        if db.session.query(query.exists()).scalar():
+            result = query.first()
+            return result
+        abort(404, error=f"Date '{date}' is not found in database.")
