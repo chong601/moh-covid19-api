@@ -1,6 +1,7 @@
 from flask_restx import Namespace, Resource, fields, abort
 from flask_sqlalchemy import Pagination
-from covid19_api.db_model.sqlalchemy_models import CasesMalaysia, CasesState, DeathsMalaysia, DeathsState, HospitalByState, ICUByState, PKRCByState, TestsMalaysia
+from sqlalchemy.sql.expression import or_
+from covid19_api.db_model.sqlalchemy_models import CasesMalaysia, CasesState, Clusters, DeathsMalaysia, DeathsState, HospitalByState, ICUByState, PKRCByState, TestsMalaysia
 from covid19_api.api import db
 
 api = Namespace('epidemic', 'Epidemic data')
@@ -25,6 +26,25 @@ cases_state = api.model('cases_state', {
     'date': fields.Date(title='Date'),
     'state': fields.String(title='State name'),
     'cases_new': fields.Integer(title='New cases')
+})
+
+clusters = api.model('clusters', {
+    'row_id': fields.Integer(title='Row ID', description='ID of the row', example='1'),
+    'row_version': fields.Integer(title='Row version', description='The version of the row.'),
+    'cluster': fields.String(title='Cluster name'),
+    'state': fields.String(title='State name'),
+    'district': fields.String(title='District name'),
+    'date_announced': fields.Date(title='Date cluster is announced'),
+    'date_last_onset': fields.Date(title='Most recent date with new cases reported in the cluster'),
+    'category': fields.String(title='Cluster category'),
+    'status': fields.String(title='Cluster status'),
+    'cases_new': fields.Integer(title='New cases reported in the cluster'),
+    'cases_total': fields.Integer(title='Total number of cases reported in the cluster'),
+    'cases_active': fields.Integer(title='Number of active cases reported in the cluster'),
+    'tests': fields.Integer(title='Number of tests performed for the cluster'),
+    'icu': fields.Integer(title='Number of individuals under ICU care for the cluster'),
+    'deaths': fields.Integer(title='Number of deaths for the cluster'),
+    'recovered': fields.Integer(title='Number of recovered individuals for the cluster')
 })
 
 deaths_malaysia = api.model('deaths_malaysia', {
@@ -223,6 +243,152 @@ class CasesStateByStateWithPagination(Resource):
         result = query.all()
         if result:
             return result
+
+
+@api.route('/clusters')
+class AllClusters(Resource):
+
+    @api.expect(pagination_parser)
+    @api.marshal_with(clusters, as_list=True, skip_none=True)
+    def get(self):
+
+        args: dict = pagination_parser.parse_args()
+        page = args.get('page') or 1
+        size = args.get('size') or 10
+
+        query = db.session.query(Clusters)
+
+        if not (args['page'] or args['size']):
+            query = query.filter(Clusters.status != 'ended').order_by(Clusters.cases_active.desc()).limit(10)
+            return query.all()
+
+        result: Pagination = query.paginate(page, size, error_out=False)
+
+        if result.items:
+            return result.items
+        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {result.pages} for size of {result.per_page} item(s)")
+
+
+@api.route('/clusters/state')
+class AvailableClustersState(Resource):
+
+    def get(self):
+
+        return {'available_states': [
+            "Johor",
+            "Kedah",
+            "Kelantan",
+            "Melaka",
+            "Negeri Sembilan",
+            "Pahang",
+            "Perak",
+            "Perlis",
+            "Pulau Pinang",
+            "Sabah",
+            "Sarawak",
+            "Selangor",
+            "Terengganu",
+            "WP Kuala Lumpur",
+            "WP Putrajaya",
+            "WP Labuan"
+        ]}
+
+
+@api.route('/clusters/state/<state>')
+class GetClusterDataByState(Resource):
+
+    @api.expect(pagination_parser)
+    @api.marshal_with(clusters, as_list=True, skip_none=True)
+    def get(self, state):
+
+        args: dict = pagination_parser.parse_args()
+        page = args.get('page') or 1
+        size = args.get('size') or 10
+
+        # Hack to allow "Semua Negeri" clusters to be always included in the query
+        query = db.session.query(Clusters).filter(or_(Clusters.state.ilike(f'%{state}%'), Clusters.state.ilike('Semua Negeri')))
+
+        result: Pagination = query.paginate(page, size, error_out=False)
+
+        if result.items:
+            return result.items
+        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {result.pages} for size of {result.per_page} item(s)")
+
+
+@api.route('/clusters/status')
+class GetClusterStatusList(Resource):
+
+    def get(self):
+        query = db.session.query(Clusters.status).distinct(Clusters.status)
+
+        return {'available_status': [status for status, in query.all()]}
+
+
+@api.route('/clusters/status/<status>')
+class GetClusterDataByStatus(Resource):
+
+    @api.expect(pagination_parser)
+    @api.marshal_with(clusters, as_list=True, skip_none=True)
+    def get(self, status):
+
+        args: dict = pagination_parser.parse_args()
+        page = args.get('page') or 1
+        size = args.get('size') or 10
+        
+        query = db.session.query(Clusters).filter(Clusters.status.ilike(status))
+        if not db.session.query(query.exists()).scalar():
+            abort(404, f"Status '{status}' is not a valid cluster status")
+
+        result: Pagination = query.paginate(page, size, error_out=False)
+
+        if result.items:
+            return result.items
+        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {result.pages} for size of {result.per_page} item(s)")
+
+
+@api.route('/clusters/category')
+class ClustersListAllCategories(Resource):
+
+    
+    def get(self):
+
+        query = db.session.query(Clusters.category).distinct(Clusters.category)
+
+        return {'available_categories': [category for category, in query.all()]}
+
+
+@api.route('/clusters/category/<category>')
+class GetClusterDataByCategory(Resource):
+
+    @api.expect(pagination_parser)
+    @api.marshal_with(clusters, as_list=True, skip_none=True)
+    def get(self, category: str):
+
+        args: dict = pagination_parser.parse_args()
+        page = args.get('page') or 1
+        size = args.get('size') or 10
+
+        query = db.session.query(Clusters).filter(Clusters.category.ilike(f'%{category}%'))
+
+        result: Pagination = query.paginate(page, size, error_out=False)
+
+        if result.items:
+            return result.items
+        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {result.pages} for size of {result.per_page} item(s)")
+
+
+@api.route('/clusters/<string:name>')
+class ClusterByName(Resource):
+
+    @api.expect(pagination_parser)
+    @api.marshal_with(clusters, as_list=True, skip_none=True)
+    def get(self, name: str):
+        
+        query = db.session.query(Clusters).filter(Clusters.cluster.ilike(f'%{name}%'))
+        result = query.all()
+        if result:
+            return result
+        abort(404, error=f"Cluster name '{name}' not found in database")
 
 
 @api.route('/deaths_malaysia')
