@@ -36,6 +36,7 @@ from .namespaces.epidemic import api as epidemic_api
 from .namespaces.repository import api as repository_api
 from .namespaces.mysejahtera import api as mysejahtera_api
 from .namespaces.static import api as static_api
+from .namespaces.registration import api as vaxreg_api
 
 # Create alpha blueprint
 alpha_blueprint = Blueprint('api', __name__, url_prefix='/api/alpha')
@@ -48,6 +49,7 @@ api.add_namespace(epidemic_api)
 api.add_namespace(repository_api)
 api.add_namespace(mysejahtera_api)
 api.add_namespace(static_api)
+api.add_namespace(vaxreg_api)
 
 # Register blueprint
 app.register_blueprint(alpha_blueprint)

@@ -339,6 +339,53 @@ class RepositoryUpdateStatus(db.Model, object):
             setattr(self, k, v)
 
 
+@dataclass
+class VaxRegMalaysia(db.Model, object):
+    __tablename__ = 'vaxreg_malaysia'
+
+    row_id: int = Column(Integer, primary_key=True, autoincrement=False, comment='Row ID')
+    row_version: int = Column(Integer, comment='Row version')
+    date: PyDate = Column(SQLDate, comment='Date')
+    state: str = Column(Text, comment='State name')
+    total: int = Column(Integer, comment='Number of unique registrants')
+    phase2: int = Column(Integer, comment='Number of unique individuals eligible for Phase 2')
+    mysj: int = Column(Integer, comment='Number of individuals registered via MySejahtera')
+    call: int = Column(Integer, comment='Number of individuals registered via the call centre')
+    web: int = Column(Integer, comment='Number of individuals registered via the website')
+    children: int = Column(Integer, comment='Number of individuals below 18')
+    elderly: int = Column(Integer, comment='Number of individuals aged 60 and above')
+    comorb: int = Column(Integer, comment='Number of individuals self-declaring at least 1 comorbidity')
+    oku: int = Column(Integer, comment='Number of individuals self-declaring as OKU')
+    
+
+    def __init__(self, **kwargs) -> None:
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+
+@dataclass
+class VaxRegState(db.Model, object):
+    __tablename__ = 'vaxreg_state'
+
+    row_id: int = Column(Integer, primary_key=True, autoincrement=False, comment='Row ID')
+    row_version: int = Column(Integer, comment='Row version')
+    date: PyDate = Column(SQLDate, comment='Date')
+    state: str = Column(Text, comment='State name')
+    total: int = Column(Integer, comment='Number of unique registrants')
+    phase2: int = Column(Integer, comment='Number of unique individuals eligible for Phase 2')
+    mysj: int = Column(Integer, comment='Number of individuals registered via MySejahtera')
+    call: int = Column(Integer, comment='Number of individuals registered via the call centre')
+    web: int = Column(Integer, comment='Number of individuals registered via the website')
+    children: int = Column(Integer, comment='Number of individuals below 18')
+    elderly: int = Column(Integer, comment='Number of individuals aged 60 and above')
+    comorb: int = Column(Integer, comment='Number of individuals self-declaring at least 1 comorbidity')
+    oku: int = Column(Integer, comment='Number of individuals self-declaring as OKU')
+
+    def __init__(self, **kwargs) -> None:
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+
 # Column index definition
 Index('cases_malaysia_csv_pkey', CasesMalaysia.date)
 Index('cases_state_csv_pkey', CasesState.date, CasesState.state)
@@ -356,3 +403,5 @@ Index('trace_malaysia_csv_pkey', TraceMalaysia.date)
 Index('population_state_idx', Population.state)
 Index('population_csv_pkey', Population.idxs)
 Index('repository_update_status_search_idx', RepositoryUpdateStatus.repository_name, RepositoryUpdateStatus.repository_category)
+Index('vaxreg_malaysia_csv_pkey', VaxRegMalaysia.date)
+Index('vaxreg_state_csv_pkey', VaxRegState.date, VaxRegState.state)

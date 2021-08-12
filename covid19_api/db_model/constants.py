@@ -64,6 +64,12 @@ ROW_VERSION = {
     },
     'population': {
         hash(frozenset(['state','idxs','pop','pop_18','pop_60'])): 1
+    },
+    'vaxreg_malaysia': {
+        hash(frozenset(['date', 'state', 'total', 'phase2', 'mysj', 'call', 'web', 'children', 'elderly', 'comorb', 'oku'])): 1
+    },
+    'vaxreg_state': {
+        hash(frozenset(['date', 'state', 'total', 'phase2', 'mysj', 'call', 'web', 'children', 'elderly', 'comorb', 'oku'])): 1
     }
 }
 
@@ -111,6 +117,12 @@ DATA_CONVERSION_DICT = {
     },
     'population': {
         1: {'idxs': int, 'pop': int, 'pop_18': int, 'pop_60': int}
+    },
+    'vaxreg_malaysia': {
+        1: {'date': convert_date, 'total': int, 'phase2': int, 'mysj': int, 'call': int, 'web': int, 'children': int, 'elderly': int, 'comorb': int, 'oku': int}
+    },
+    'vaxreg_state': {
+        1: {'date': convert_date, 'total': int, 'phase2': int, 'mysj': int, 'call': int, 'web': int, 'children': int, 'elderly': int, 'comorb': int, 'oku': int}
     }
 }
 
