@@ -70,6 +70,12 @@ ROW_VERSION = {
     },
     'vaxreg_state': {
         hash(frozenset(['date', 'state', 'total', 'phase2', 'mysj', 'call', 'web', 'children', 'elderly', 'comorb', 'oku'])): 1
+    },
+    'vax_malaysia': {
+        hash(frozenset(['date', 'dose1_daily', 'dose2_daily', 'total_daily', 'dose1_cumul', 'dose2_cumul', 'total_cumul'])): 1
+    },
+    'vax_state': {
+        hash(frozenset(['date', 'state', 'dose1_daily', 'dose2_daily', 'total_daily', 'dose1_cumul', 'dose2_cumul', 'total_cumul'])): 1
     }
 }
 
@@ -123,6 +129,12 @@ DATA_CONVERSION_DICT = {
     },
     'vaxreg_state': {
         1: {'date': convert_date, 'total': int, 'phase2': int, 'mysj': int, 'call': int, 'web': int, 'children': int, 'elderly': int, 'comorb': int, 'oku': int}
+    },
+    'vax_malaysia': {
+        1: {'date': convert_date, 'dose1_daily': int, 'dose2_daily': int, 'total_daily': int, 'dose1_cumul': int, 'dose2_cumul': int, 'total_cumul': int}
+    },
+    'vax_state': {
+        1: {'date': convert_date, 'dose1_daily': int, 'dose2_daily': int, 'total_daily': int, 'dose1_cumul': int, 'dose2_cumul': int, 'total_cumul': int}
     }
 }
 

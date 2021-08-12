@@ -386,6 +386,46 @@ class VaxRegState(db.Model, object):
             setattr(self, k, v)
 
 
+@dataclass
+class VaxMalaysia(db.Model, object):
+    __tablename__ = 'vax_malaysia'
+
+    row_id: int = Column(Integer, primary_key=True, autoincrement=False, comment='Row ID')
+    row_version: int = Column(Integer, comment='Row version')
+    date: PyDate = Column(SQLDate, comment='Reported date')
+    dose1_daily: int = Column(Integer, comment='1st doses delivered between 0000 and 2359 on date')
+    dose2_daily: int = Column(Integer, comment='2nd doses delivered between 0000 and 2359 on date')
+    total_daily: int = Column(Integer, comment='Sum of 1st and 2nd dose delivered between 00000 and 2359 on date')
+    dose1_cumul: int = Column(Integer, comment='Sum of dose1_daily from first day of programme until row date')
+    dose2_cumul: int = Column(Integer, comment='Sum of dose2_daily from first day of programme until row date')
+    total_cumul: int = Column(Integer, comment='Sum of dose1_daily and dose2_daily until row date')
+    
+
+    def __init__(self, **kwargs) -> None:
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+
+@dataclass
+class VaxState(db.Model, object):
+    __tablename__ = 'vax_state'
+
+    row_id: int = Column(Integer, primary_key=True, autoincrement=False, comment='Row ID')
+    row_version: int = Column(Integer, comment='Row version')
+    date: PyDate = Column(SQLDate, comment='Reported date')
+    state: str = Column(Text, comment='State name')
+    dose1_daily: int = Column(Integer, comment='1st doses delivered between 0000 and 2359 on date')
+    dose2_daily: int = Column(Integer, comment='2nd doses delivered between 0000 and 2359 on date')
+    total_daily: int = Column(Integer, comment='Sum of 1st and 2nd dose delivered between 00000 and 2359 on date')
+    dose1_cumul: int = Column(Integer, comment='Sum of dose1_daily from first day of programme until row date')
+    dose2_cumul: int = Column(Integer, comment='Sum of dose2_daily from first day of programme until row date')
+    total_cumul: int = Column(Integer, comment='Sum of dose1_daily and dose2_daily until row date')
+
+    def __init__(self, **kwargs) -> None:
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+
 # Column index definition
 Index('cases_malaysia_csv_pkey', CasesMalaysia.date)
 Index('cases_state_csv_pkey', CasesState.date, CasesState.state)
@@ -405,3 +445,5 @@ Index('population_csv_pkey', Population.idxs)
 Index('repository_update_status_search_idx', RepositoryUpdateStatus.repository_name, RepositoryUpdateStatus.repository_category)
 Index('vaxreg_malaysia_csv_pkey', VaxRegMalaysia.date)
 Index('vaxreg_state_csv_pkey', VaxRegState.date, VaxRegState.state)
+Index('vax_malaysia_csv_pkey', VaxMalaysia.date)
+Index('vax_state_csv_pkey', VaxState.date, VaxState.state)
