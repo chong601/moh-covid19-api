@@ -34,6 +34,7 @@ from covid19_api.db_model import sqlalchemy_models
 # Import namespaces
 from .namespaces.epidemic import api as epidemic_api
 from .namespaces.repository import api as repository_api
+from .namespaces.mysejahtera import api as mysejahtera_api
 
 # Create alpha blueprint
 alpha_blueprint = Blueprint('api', __name__, url_prefix='/api/alpha')
@@ -44,6 +45,7 @@ api = Api(alpha_blueprint, title='MOH COVID-19 REST API', version='alpha', descr
 # Add namespaces
 api.add_namespace(epidemic_api)
 api.add_namespace(repository_api)
+api.add_namespace(mysejahtera_api)
 
 # Register blueprint
 app.register_blueprint(alpha_blueprint)
