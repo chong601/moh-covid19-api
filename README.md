@@ -19,7 +19,7 @@ URL to the API will be defined soon™.
 | - | - | - | - |
 | cases_malaysia | Country-wide new cases data | /epidemic/cases_malaysia<br>/epidemic/cases_malaysia/{date} | Done |
 | cases_state | Per-state new cases data | /epidemic/cases_state<br>/epidemic/cases_state/{state}<br>/epidemic/cases_state/{state}/{date} | Done |
-| clusters | All cluster data | TBD | In progress |
+| clusters | All cluster data | /epidemic/clusters<br>/epidemic/clusters<br>/epidemic/clusters/category<br>/epidemic/clusters/category/{category}<br>/epidemic/clusters/state<br>/epidemic/clusters/state/{state}<br>/epidemic/clusters/status<br>/epidemic/clusters/status/{status}<br>/epidemic/clusters/{name} | Done |
 | deaths_malaysia | Country-wide new deaths data | /epidemic/deaths_malaysia<br>/epidemic/deaths_malaysia/{date} | Done |
 | deaths_state | Per-state new deaths data | /epidemic/deaths_state<br>/epidemic/deaths_state/{state}<br>/epidemic/deaths_state/{state}/{date} | Done |
 | hospital | Per-state hospital data | /epidemic/hospital<br>/epidemic/hospital/{state}<br>/epidemic/hospital/{state}/{date} | Done |
@@ -43,14 +43,14 @@ URL to the API will be defined soon™.
 ### Vaccination registration data
 | Name | Description | URL endpoint | Status |
 | - | - | - | - |
-| vaxreg_malaysia | Country-wide vaccination registration data | TBD | In progress |
-| vaxreg_state | Per-state vaccination registration data | TBD | In progress |
+| vaxreg_malaysia | Country-wide vaccination registration data | /registration/vaxreg_malaysia<br>/registration/vaxreg_malaysia/{date} | Done |
+| vaxreg_state | Per-state vaccination registration data | /registration/vaxreg_state<br>/registration/vaxreg_state/{state}<br>/registration/vaxreg_state/{state}/{date} | Done |
 
 ### Vaccination data
 | Name | Description | URL endpoint | Status |
 | - | - | - | - |
-| vax_malaysia | Country-wide vaccination data | URL endpoint | In progress |
-| vax_state | Per-state vaccination data | URL endpoint | In progress |
+| vax_malaysia | Country-wide vaccination data | /vaccination/vax_malaysia<br>/vaccination/vax_malaysia/{date} | Done |
+| vax_state | Per-state vaccination data | /vaccination/vax_state<br>/vaccination/vax_state/{state}<br>/vaccination/vax_state/{state}/{date} | Done |
 
 # Features
 - [x] Pandemic data
@@ -69,8 +69,8 @@ URL to the API will be defined soon™.
   - [x] Per-state check-ins
   - [x] Contact tracing and HIDE hotspot
 - [x] Population data
-- [ ] [NEW] Vaccination data
-  - [ ] [NEW] Country-wide vaccine registration statistics
-  - [ ] [NEW] Per-state vaccine registration statistics
-  - [ ] [NEW] Country-wide vaccination statistics
-  - [ ] [NEW] Per-state vaccination statistics
+- [x] [NEW] Vaccination data
+  - [x] [NEW] Country-wide vaccine registration statistics
+  - [x] [NEW] Per-state vaccine registration statistics
+  - [x] [NEW] Country-wide vaccination statistics
+  - [x] [NEW] Per-state vaccination statistics
