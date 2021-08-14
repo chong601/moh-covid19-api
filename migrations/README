@@ -1,1 +1,6 @@
-Generic single-database configuration.
+# Alembic/Flask-Migrate migrations directory
+Here lives the files used by Alembic/Flask-Migrate to perform database schema migrations to the
+SQL address defined on the application.
+
+## Executing the migration
+Use `flask db upgrade` to perform schema migration.
