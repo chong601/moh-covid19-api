@@ -22,7 +22,10 @@ class RepositoryFullDetails(Resource):
 
     @api.marshal_with(repository, as_list=True)
     def get(self):
-        return db.session.query(RepositoryUpdateStatus).all()
+        result = db.session.query(RepositoryUpdateStatus).all()
+        if result:
+            return result
+        abort(404, error='No repository found. Please check if you have populated the data using `load_data_into_database.py` script')
 
 
 @api.route('/<string:repository_name>')

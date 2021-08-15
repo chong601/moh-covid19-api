@@ -55,7 +55,7 @@ class VaxMalaysiaWithPagination(Resource):
         result:Pagination = query.paginate(page, size, error_out=False)
         if result.items:
             return result.items
-        abort(404, f'Invalid page number {page}. Valid page numbers are between 1 to {result.pages}')
+        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {result.pages} for size of {result.per_page} item(s)")
 
 
 @api.route('/vax_malaysia/<string:date>')
@@ -92,12 +92,12 @@ class VaxStateWithPagination(Resource):
         # Handle date bullshit first, then deal with actual data
 
         # Get dates based on the pagination values
-        date_subquery: Pagination = date_subquery.paginate(page, size, error_out=False)
+        date_result: Pagination = date_subquery.paginate(page, size, error_out=False)
         # Get all dates returned by the pagination
-        dates = [date[0] for date in date_subquery.items]
+        dates = [date[0] for date in date_result.items]
 
         # Future project: implement pagination logic and expose it to end user
-        attr = {a: getattr(date_subquery, a) for a in dir(date_subquery) if not a.startswith('__') and not callable(getattr(date_subquery, a))}
+        attr = {a: getattr(date_result, a) for a in dir(date_result) if not a.startswith('__') and not callable(getattr(date_result, a))}
 
         if 'query' in attr:
             compile = attr['query'].statement.compile()
@@ -115,7 +115,7 @@ class VaxStateWithPagination(Resource):
 
         if result:
             return result
-        abort(404, f'Invalid page number {page}. Valid page numbers are between 1 to {date_subquery.pages}')
+        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {date_result.pages} for size of {date_result.per_page} item(s)")
 
 
 @api.route('/vax_state/<string:state>')
@@ -170,7 +170,7 @@ class VaxStateByStateWithPagination(Resource):
 
         if result:
             return result
-        abort(404, f'Invalid page number {page}. Valid page numbers are between 1 to {date_result.pages}')
+        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {date_result.pages} for size of {date_result.per_page} item(s)")
 
 
 @api.route('/vax_state/<string:state>/<string:date>')

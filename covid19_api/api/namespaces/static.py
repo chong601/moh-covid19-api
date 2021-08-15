@@ -28,7 +28,7 @@ class PopulationData(Resource):
         result = db.session.query(Population).all()
         if result:
             return result
-        
+        abort(404, error='No population data found')
 
 
 @api.route('/population/<string:state>')

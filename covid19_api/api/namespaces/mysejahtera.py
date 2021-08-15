@@ -112,7 +112,7 @@ class CheckinMalaysiaTimeWithPagination(Resource):
         result:Pagination = query.paginate(page, size, error_out=False)
         if result.items:
             return result.items
-        abort(404, f'Invalid page number {page}. Valid page numbers are between 1 to {result.pages}')
+        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {result.pages} for size of {result.per_page} item(s)")
 
 
 @api.route('/checkin_malaysia_time/<string:date>')
@@ -148,7 +148,7 @@ class CheckinMalaysiaWithPagination(Resource):
         result:Pagination = query.paginate(page, size, error_out=False)
         if result.items:
             return result.items
-        abort(404, f'Invalid page number {page}. Valid page numbers are between 1 to {result.pages}')
+        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {result.pages} for size of {result.per_page} item(s)")
 
 
 @api.route('/checkin_malaysia/<string:date>')
@@ -185,12 +185,12 @@ class CheckinStateWithPagination(Resource):
         # Handle date bullshit first, then deal with actual data
 
         # Get dates based on the pagination values
-        date_subquery: Pagination = date_subquery.paginate(page, size, error_out=False)
+        date_result: Pagination = date_subquery.paginate(page, size, error_out=False)
         # Get all dates returned by the pagination
-        dates = [date[0] for date in date_subquery.items]
+        dates = [date[0] for date in date_result.items]
 
         # Future project: implement pagination logic and expose it to end user
-        attr = {a: getattr(date_subquery, a) for a in dir(date_subquery) if not a.startswith('__') and not callable(getattr(date_subquery, a))}
+        attr = {a: getattr(date_result, a) for a in dir(date_result) if not a.startswith('__') and not callable(getattr(date_result, a))}
 
         if 'query' in attr:
             compile = attr['query'].statement.compile()
@@ -208,7 +208,7 @@ class CheckinStateWithPagination(Resource):
 
         if result:
             return result
-        abort(404, f'Invalid page number {page}. Valid page numbers are between 1 to {date_subquery.pages}')
+        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {date_result.pages} for size of {date_result.per_page} item(s)")
 
 
 @api.route('/checkin_state/<string:state>')
@@ -263,7 +263,7 @@ class CheckinStateByStateWithPagination(Resource):
 
         if result:
             return result
-        abort(404, f'Invalid page number {page}. Valid page numbers are between 1 to {date_result.pages}')
+        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {date_result.pages} for size of {date_result.per_page} item(s)")
 
 
 @api.route('/checkin_state/<string:state>/<string:date>')
@@ -280,4 +280,41 @@ class CheckinStateByStateByDateWithPagination(Resource):
             if db.session.query(query.exists()).scalar():
                 result = query.first()
                 return result
-        abort(404, error=f"State '{state} with date '{date}' is not found in database.")
+        abort(404, error=f"State '{state}' with date '{date}' is not found in database.")
+
+
+# How the fuck did I forget about tracing data?
+@api.route('/trace_malaysia')
+class TraceMalaysiaWithPagination(Resource):
+
+    @api.expect(pagination_parser)
+    @api.marshal_with(trace_malaysia, as_list=True, skip_none=True)
+    def get(self):
+        args: dict = pagination_parser.parse_args()
+        page = args.get('page') or 1
+        size = args.get('size') or 10
+
+        date_subquery = db.session.query(TraceMalaysia.date)
+        query = db.session.query(TraceMalaysia)
+
+        if not (args['page'] or args['size']):
+            date_subquery = date_subquery.order_by(TraceMalaysia.date.desc()).limit(7)
+            query = query.filter(TraceMalaysia.date.in_(date_subquery)).order_by(TraceMalaysia.date)
+            return query.all()
+
+        result:Pagination = query.paginate(page, size, error_out=False)
+        if result.items:
+            return result.items
+        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {result.pages} for size of {result.per_page} item(s)")
+
+
+@api.route('/trace_malaysia/<string:date>')
+class TraceMalaysiaByDate(Resource):
+
+    @api.marshal_with(trace_malaysia, skip_none=True)
+    def get(self, date):
+        query = db.session.query(TraceMalaysia).filter(TraceMalaysia.date == date)
+        if db.session.query(query.exists()).scalar():
+            result = query.first()
+            return result
+        abort(404, error=f"Date '{date}' is not found in database.")

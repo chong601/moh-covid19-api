@@ -149,7 +149,7 @@ class CasesMalaysiaWithPagination(Resource):
         result:Pagination = query.paginate(page, size, error_out=False)
         if result.items:
             return result.items
-        abort(404, f'Invalid page number {page}. Valid page numbers are between 1 to {result.pages}')
+        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {result.pages} for size of {result.per_page} item(s)")
 
 
 @api.route('/cases_malaysia/<string:date>')
@@ -175,21 +175,41 @@ class CasesStateWithPagination(Resource):
         # We don't use size against the final result, instead on the number of dates
         size = args.get('size') or 7
 
-        date_subquery = db.session.query(CasesState.date).group_by(CasesState.date)
+        date_subquery = db.session.query(CasesState.date).group_by(CasesState.date).order_by(CasesState.date)
         query = db.session.query(CasesState)
-        state_count = db.session.query(CasesState.state).distinct(CasesState.state).count()
 
         if not (args['page'] or args['size']):
-            date_subquery = date_subquery.order_by(CasesState.date.desc()).limit(size)
+            date_subquery = date_subquery.order_by(CasesState.date.desc()).limit(7)
+            query = query.filter(CasesState.date.in_(date_subquery)).order_by(CasesState.date, CasesState.state)
+            return query.all()
 
-        query = query.filter(CasesState.date.in_(date_subquery)).order_by(CasesState.date, CasesState.state)
+        # Handle date bullshit first, then deal with actual data
 
-        size = size * state_count
+        # Get dates based on the pagination values
+        date_result: Pagination = date_subquery.paginate(page, size, error_out=False)
+        # Get all dates returned by the pagination
+        dates = [date[0] for date in date_result.items]
 
-        result: Pagination = query.paginate(page, size, error_out=False)
-        if result.items:
-            return result.items
-        abort(404, f'Invalid page number {page}. Valid page numbers are between 1 to {result.pages}')
+        # Future project: implement pagination logic and expose it to end user
+        attr = {a: getattr(date_result, a) for a in dir(date_result) if not a.startswith('__') and not callable(getattr(date_result, a))}
+
+        if 'query' in attr:
+            compile = attr['query'].statement.compile()
+            attr.update({'query_string': compile.string})
+            attr.update({'query_param': compile.params})
+            del attr['query']
+
+        # Query the database with the rows selected from pagination
+        # Think of this as a subquery-ish method, except that the query is done separately like:
+        # 
+        # pagination_result = select date from vax_state group by date order by date offset (SELECT (page_number - 1) * size) limit size;
+        # query = select * from vax_state where date in (pagination.result);
+        query = query.filter(CasesState.date.in_(dates)).order_by(CasesState.date, CasesState.state)
+        result = query.all()
+
+        if result:
+            return result
+        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {date_result.pages} for size of {date_result.per_page} item(s)")
 
 
 @api.route('/cases_state/<string:state>')
@@ -243,6 +263,7 @@ class CasesStateByStateWithPagination(Resource):
         result = query.all()
         if result:
             return result
+        abort(404, error=f"State '{state}' with date '{date}' is not found in database.")
 
 
 @api.route('/clusters')
@@ -313,6 +334,21 @@ class GetClusterDataByState(Resource):
         if result.items:
             return result.items
         abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {result.pages} for size of {result.per_page} item(s)")
+
+
+# I would like to enable district search, but there's a few roadblocks with that idea sadly:
+# - LIKE constructs are *NOT* fast. It's negligble in the situation where the number of rows are low,
+#   but lots of rows = slow-downs.
+#   - Good news is that *most* DB servers has their own implementation on having fast lookups with
+#     indexes (PostgreSQL has <type>_pattern_ops which allows fast LIKE searches), but I don't know
+#     if there's a database-agnostic way to set up the correct index for all database servers (yet).
+#     Do make a pull-request if you have any ideas!
+# - District names are stored in a single column, comma-separated. 
+#   - Which is fine, but the problem is the names are not consistent (from a quick glance)
+#     Which makes storing a separate table to store the district names can be complex and prone to
+#     duplicates.
+#
+# Nevertheless, I will implement it anyway, but expect district searching to have weird quirks.
 
 
 @api.route('/clusters/status')
@@ -414,7 +450,7 @@ class DeathsMalaysiaWithPagination(Resource):
 
         if result.items:
             return result.items
-        abort(404, f'Invalid page number {page}. Valid page numbers are between 1 to {result.pages}')
+        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {result.pages} for size of {result.per_page} item(s)")
 
 
 @api.route('/deaths_malaysia/<string:date>')
@@ -456,7 +492,7 @@ class DeathsStatewithPagination(Resource):
         result: Pagination = query.paginate(page, size, error_out=False)
         if result.items:
             return result.items
-        abort(404, f'Invalid page number {page}. Valid page numbers are between 1 to {result.pages}')
+        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {result.pages} for size of {result.per_page} item(s)")
 
 
 @api.route('/deaths_state/<string:state>')
@@ -500,7 +536,7 @@ class DeathsStateByStateByDate(Resource):
         if db.session.query(query.exists()).scalar():
             result = query.first()
             return result
-        abort(404, error=f"State '{state} with date '{date}' is not found in database.")
+        abort(404, error=f"State '{state}' with date '{date}' is not found in database.")
 
 
 @api.route('/hospital')
@@ -526,12 +562,12 @@ class HospitalWithPagination(Resource):
         # some crappy dance around this to make it "work"
 
         # Get dates based on the pagination values
-        date_subquery: Pagination = date_subquery.paginate(page, size, error_out=False)
+        date_result: Pagination = date_subquery.paginate(page, size, error_out=False)
         # Get all dates returned by the pagination
-        dates = [date[0] for date in date_subquery.items]
+        dates = [date[0] for date in date_result.items]
 
         # Future project: implement pagination logic and expose it to end user
-        attr = {a: getattr(date_subquery, a) for a in dir(date_subquery) if not a.startswith('__') and not callable(getattr(date_subquery, a))}
+        attr = {a: getattr(date_result, a) for a in dir(date_result) if not a.startswith('__') and not callable(getattr(date_result, a))}
 
         if 'query' in attr:
             compile = attr['query'].statement.compile()
@@ -549,7 +585,7 @@ class HospitalWithPagination(Resource):
 
         if result:
             return result
-        abort(404, f'Invalid page number {page}. Valid page numbers are between 1 to {date_subquery.pages}')
+        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {date_result.pages} for size of {date_result.per_page} item(s)")
 
 
 @api.route('/hospital/<string:state>')
@@ -605,7 +641,7 @@ class HospitalByStateWithPagination(Resource):
 
         if result:
             return result
-        abort(404, f'Invalid page number {page}. Valid page numbers are between 1 to {date_result.pages}')
+        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {date_result.pages} for size of {date_result.per_page} item(s)")
 
 
 @api.route('/hospital/<string:state>/<string:date>')
@@ -648,12 +684,12 @@ class ICUWithPagination(Resource):
         # some crappy dance around this to make it "work"
 
         # Get dates based on the pagination values
-        date_subquery: Pagination = date_subquery.paginate(page, size, error_out=False)
+        date_result: Pagination = date_subquery.paginate(page, size, error_out=False)
         # Get all dates returned by the pagination
-        dates = [date[0] for date in date_subquery.items]
+        dates = [date[0] for date in date_result.items]
 
         # Future project: implement pagination logic and expose it to end user
-        attr = {a: getattr(date_subquery, a) for a in dir(date_subquery) if not a.startswith('__') and not callable(getattr(date_subquery, a))}
+        attr = {a: getattr(date_result, a) for a in dir(date_result) if not a.startswith('__') and not callable(getattr(date_result, a))}
 
         if 'query' in attr:
             compile = attr['query'].statement.compile()
@@ -671,7 +707,7 @@ class ICUWithPagination(Resource):
 
         if result:
             return result
-        abort(404, f'Invalid page number {page}. Valid page numbers are between 1 to {date_subquery.pages}')
+        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {date_result.pages} for size of {date_result.per_page} item(s)")
 
 
 @api.route('/icu/<string:state>')
@@ -720,14 +756,14 @@ class ICUByStateWithPagination(Resource):
         # Query the database with the rows selected from pagination
         # Think of this as a subquery-ish method, except that the query is done separately like:
         #
-        # pagination_result = select date from hospital_by_state group by date order by date offset (SELECT (page_number - 1) * size) limit size;
-        # query = select * from hospital_by_state where date in (pagination.result);
+        # pagination_result = select date from icu_by_state group by date order by date offset (SELECT (page_number - 1) * size) limit size;
+        # query = select * from icu_by_state where date in (pagination.result);
         query = query.filter(ICUByState.date.in_(dates)).order_by(ICUByState.date, ICUByState.state)
         result = query.all()
 
         if result:
             return result
-        abort(404, f'Invalid page number {page}. Valid page numbers are between 1 to {date_result.pages}')
+        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {date_result.pages} for size of {date_result.per_page} item(s)")
 
 
 @api.route('/icu/<string:state>/<string:date>')
@@ -744,7 +780,7 @@ class ICUByStateByDateWithPagination(Resource):
             if db.session.query(query.exists()).scalar():
                 result = query.first()
                 return result
-        abort(404, error=f"State '{state} with date '{date}' is not found in database.")
+        abort(404, error=f"State '{state}' with date '{date}' is not found in database.")
 
 
 @api.route('/pkrc')
@@ -770,12 +806,12 @@ class PKRCWithPagination(Resource):
         # some crappy dance around this to make it "work"
 
         # Get dates based on the pagination values
-        date_subquery: Pagination = date_subquery.paginate(page, size, error_out=False)
+        date_result: Pagination = date_subquery.paginate(page, size, error_out=False)
         # Get all dates returned by the pagination
-        dates = [date[0] for date in date_subquery.items]
+        dates = [date[0] for date in date_result.items]
 
         # Future project: implement pagination logic and expose it to end user
-        attr = {a: getattr(date_subquery, a) for a in dir(date_subquery) if not a.startswith('__') and not callable(getattr(date_subquery, a))}
+        attr = {a: getattr(date_result, a) for a in dir(date_result) if not a.startswith('__') and not callable(getattr(date_result, a))}
 
         if 'query' in attr:
             compile = attr['query'].statement.compile()
@@ -789,11 +825,11 @@ class PKRCWithPagination(Resource):
         # pagination_result = select date from hospital_by_state group by date order by date offset (SELECT (page_number - 1) * size) limit size;
         # query = select * from hospital_by_state where date in (pagination.result);
         query = query.filter(PKRCByState.date.in_(dates)).order_by(PKRCByState.date, PKRCByState.state)
-        result = query.all()
+        result: Pagination = query.all()
 
         if result:
             return result
-        abort(404, f'Invalid page number {page}. Valid page numbers are between 1 to {date_subquery.pages}')
+        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {date_result.pages} for size of {date_result.per_page} item(s)")
 
 
 @api.route('/pkrc/<string:state>')
@@ -849,7 +885,7 @@ class PKRCByStateWithPagination(Resource):
 
         if result:
             return result
-        abort(404, f'Invalid page number {page}. Valid page numbers are between 1 to {date_result.pages}')
+        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {date_result.pages} for size of {date_result.per_page} item(s)")
 
 
 @api.route('/pkrc/<string:state>/<string:date>')
@@ -866,7 +902,7 @@ class PKRCByStateByDateWithPagination(Resource):
             if db.session.query(query.exists()).scalar():
                 result = query.first()
                 return result
-        abort(404, error=f"State '{state} with date '{date}' is not found in database.")
+        abort(404, error=f"State '{state}' with date '{date}' is not found in database.")
 
 
 @api.route('/tests_malaysia')
@@ -890,7 +926,7 @@ class TestsMalaysiaWithPagination(Resource):
         result:Pagination = query.paginate(page, size, error_out=False)
         if result.items:
             return result.items
-        abort(404, f'Invalid page number {page}. Valid page numbers are between 1 to {result.pages}')
+        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {result.pages} for size of {result.per_page} item(s)")
 
 
 @api.route('/tests_malaysia/<string:date>')
