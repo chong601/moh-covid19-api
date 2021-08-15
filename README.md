@@ -74,3 +74,21 @@ URL to the API will be defined soon™.
   - [x] [NEW] Per-state vaccine registration statistics
   - [x] [NEW] Country-wide vaccination statistics
   - [x] [NEW] Per-state vaccination statistics
+
+# And now, a message from the author...
+This project intends to be the base on running RESTful API service on cloud and is currently hosted on [OVHcloud](https://ovh.com/asia/).
+
+API servers are available at:
+- Beauharnois, Canada (active)
+- Frankfurt, Germany (in progress)
+- Singapore (in progress)
+
+DB servers are located at
+- Singapore (active)
+- Frankfurt, Germany (in progress)
+
+This project do cost money; somewhere approximately $25/month excluding development instances running for tests (which would be closer to $35/month).
+
+If you utilize this API and do benefit from it (in some way), consider supporting me at [Buy me a Coffee](https://www.buymeacoffee.com/chong601). This would help me develop more projects in the future!
+
+For those that supported my project, many thanks in advance!
