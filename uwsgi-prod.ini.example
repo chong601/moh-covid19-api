@@ -1,0 +1,18 @@
+[uwsgi]
+module = wsgi:app
+master = true
+# replace processes to the number of physical cores!
+processes = 2
+# to be fair, I wonder how effective threading is in general...
+threads = 100
+vacuum = true
+# Set socket to rw-rw----
+chmod-socket = 660
+# Enable uWSGI socket at /tmp/covid19api.sock
+socket = /tmp/covid19api.sock
+# Enable Python threads
+threads = true
+# Allow termination of uWSGI instance on SIGTERM (eg from systemctl stop/restart)
+die-on-term = true
+logger = file:/home/ubuntu/moh-covid19-api/uwsgi-prod.log
+log-maxsize = 20971520
