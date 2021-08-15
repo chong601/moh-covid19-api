@@ -33,7 +33,7 @@ URL to the API will be defined soon™.
 | checkin_malaysia_time | MySejahtera check-in by time data | /mysejahtera/checkin_malaysia_time<br>/mysejahtera/checkin_malaysia_time/{date} | Done |
 | checkin_malaysia | Country-wide MySejahtera check-in data | /mysejahtera/checkin_malaysia<br>/mysejahtera/checkin_malaysia{date} | Done |
 | checkin_state | Per-state MySejahtera check-in data | /mysejahtera/checkin_state<br>/mysejahtera/checkin_state/{state}<br>/mysejahtera/checkin_state/{state}/{date} | Done |
-| trace_malaysia | Contact tracing and HIDE system data | /mysejahtera/trace_malaysia<br>/mysejahtera/trace_malaysia/{date}| In progress |
+| trace_malaysia | Contact tracing and HIDE system data | /mysejahtera/trace_malaysia<br>/mysejahtera/trace_malaysia/{date}| Done |
 
 ### Static data
 | Name | Description | URL endpoint | Status |
