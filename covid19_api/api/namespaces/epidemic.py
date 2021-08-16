@@ -68,6 +68,7 @@ hospital = api.model('hospital', {
     'date': fields.Date(title='Reported date'),
     'state': fields.String(title='State name'),
     'beds': fields.Integer(title='Total available hospital beds'),
+    'beds_covid': fields.Integer(title='Total available hospital beds dedicated for COVID-19'),
     'beds_noncrit': fields.Integer(title='Total available hospital beds for non-critical care'),
     'admitted_pui': fields.Integer(title='Total admitted persons under investigation'),
     'admitted_covid': fields.Integer(title='Total admitted persons with COVID-19'),
@@ -85,10 +86,10 @@ icu = api.model('icu', {
     'row_version': fields.Integer(title='Row version'),
     'date': fields.Date(title='Reported date'),
     'state': fields.String(title='State name'),
-    'bed_icu': fields.Integer(title='Gazetted ICU beds'),
-    'bed_icu_rep': fields.Integer(title='Total ICU beds for Anaesthesiology & Critical Care departments'),
-    'bed_icu_total': fields.Integer(title='Total ICU beds'),
-    'bed_icu_covid': fields.Integer(title='Total ICU beds dedicated for COVID-19'),
+    'beds_icu': fields.Integer(title='Gazetted ICU beds'),
+    'beds_icu_rep': fields.Integer(title='Total ICU beds for Anaesthesiology & Critical Care departments'),
+    'beds_icu_total': fields.Integer(title='Total ICU beds'),
+    'beds_icu_covid': fields.Integer(title='Total ICU beds dedicated for COVID-19'),
     'vent': fields.Integer(title='Total available ventilators'),
     'vent_port': fields.Integer(title='Total available portable ventilators'),
     'icu_covid': fields.Integer(title='Total number of COVID individuals under ICU care'),
@@ -134,10 +135,18 @@ class CasesMalaysiaWithPagination(Resource):
 
     @api.expect(pagination_parser)
     @api.marshal_with(cases_malaysia, as_list=True, skip_none=True)
+    @api.doc(responses={404: 'Not Found'})
     def get(self):
+        """
+        Returns country-wide new cases with pagination support.
+
+        Defaults to get new cases for the last 7 days if page and size are not defined, in ascending date order.
+
+        Size parameter is optional and defaults to 10 items.
+        """
         args: dict = pagination_parser.parse_args()
         page = args.get('page') or 1
-        size = args.get('size') or 7
+        size = args.get('size') or 10
 
         date_subquery = db.session.query(CasesMalaysia.date)
         query = db.session.query(CasesMalaysia)
@@ -149,14 +158,20 @@ class CasesMalaysiaWithPagination(Resource):
         result:Pagination = query.paginate(page, size, error_out=False)
         if result.items:
             return result.items
-        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {result.pages} for size of {result.per_page} item(s)")
+        abort(404, error=f"Invalid page number '{page}'. Valid page numbers are between 1 to {result.pages} for size of {result.per_page} item(s)")
 
 
 @api.route('/cases_malaysia/<string:date>')
 class CasesMalaysiaByDate(Resource):
 
     @api.marshal_with(cases_malaysia, skip_none=True)
+    @api.doc(responses={404: 'Not Found'})
     def get(self, date):
+        """
+        Returns country-wide new cases based on date provided.
+
+        Date format follows ISO-8601 date format (YYYY-MM-DD eg. 2021-08-03).
+        """
         query = db.session.query(CasesMalaysia).filter(CasesMalaysia.date == date)
         if db.session.query(query.exists()).scalar():
             result = query.first()
@@ -169,7 +184,17 @@ class CasesStateWithPagination(Resource):
 
     @api.expect(pagination_parser)
     @api.marshal_with(cases_state, skip_none=True)
+    @api.doc(responses={404: 'Not Found'})
     def get(self):
+        """
+        Returns new cases on per-state basis with pagination support.
+
+        Defaults to get new cases for the last 7 days if page and size are not defined, in ascending date order.
+
+        Size parameter is optional and defaults to 10 items.
+
+        Note: Size parameter only applies to number of days, not number of items!
+        """
         args: dict = pagination_parser.parse_args()
         page = args.get('page') or 1
         # We don't use size against the final result, instead on the number of dates
@@ -209,7 +234,7 @@ class CasesStateWithPagination(Resource):
 
         if result:
             return result
-        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {date_result.pages} for size of {date_result.per_page} item(s)")
+        abort(404, error=f"Invalid page number '{page}'. Valid page numbers are between 1 to {date_result.pages} for size of {date_result.per_page} item(s)")
 
 
 @api.route('/cases_state/<string:state>')
@@ -585,7 +610,7 @@ class HospitalWithPagination(Resource):
 
         if result:
             return result
-        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {date_result.pages} for size of {date_result.per_page} item(s)")
+        abort(404, error=f"Invalid page number '{page}'. Valid page numbers are between 1 to {date_result.pages} for size of {date_result.per_page} item(s)")
 
 
 @api.route('/hospital/<string:state>')
@@ -641,7 +666,7 @@ class HospitalByStateWithPagination(Resource):
 
         if result:
             return result
-        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {date_result.pages} for size of {date_result.per_page} item(s)")
+        abort(404, error=f"Invalid page number '{page}'. Valid page numbers are between 1 to {date_result.pages} for size of {date_result.per_page} item(s)")
 
 
 @api.route('/hospital/<string:state>/<string:date>')
@@ -707,7 +732,7 @@ class ICUWithPagination(Resource):
 
         if result:
             return result
-        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {date_result.pages} for size of {date_result.per_page} item(s)")
+        abort(404, error=f"Invalid page number '{page}'. Valid page numbers are between 1 to {date_result.pages} for size of {date_result.per_page} item(s)")
 
 
 @api.route('/icu/<string:state>')
@@ -763,7 +788,7 @@ class ICUByStateWithPagination(Resource):
 
         if result:
             return result
-        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {date_result.pages} for size of {date_result.per_page} item(s)")
+        abort(404, error=f"Invalid page number '{page}'. Valid page numbers are between 1 to {date_result.pages} for size of {date_result.per_page} item(s)")
 
 
 @api.route('/icu/<string:state>/<string:date>')
@@ -829,7 +854,7 @@ class PKRCWithPagination(Resource):
 
         if result:
             return result
-        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {date_result.pages} for size of {date_result.per_page} item(s)")
+        abort(404, error=f"Invalid page number '{page}'. Valid page numbers are between 1 to {date_result.pages} for size of {date_result.per_page} item(s)")
 
 
 @api.route('/pkrc/<string:state>')
@@ -885,7 +910,7 @@ class PKRCByStateWithPagination(Resource):
 
         if result:
             return result
-        abort(404, f"Invalid page number '{page}'. Valid page numbers are between 1 to {date_result.pages} for size of {date_result.per_page} item(s)")
+        abort(404, error=f"Invalid page number '{page}'. Valid page numbers are between 1 to {date_result.pages} for size of {date_result.per_page} item(s)")
 
 
 @api.route('/pkrc/<string:state>/<string:date>')
