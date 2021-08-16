@@ -13,6 +13,9 @@ URL to the API will be defined soon™.
 - Code cleanups
 - Make PR to [official Ministry of Health Malaysia COVID-19 repository](https://github.com/MoH-Malaysia/covid19-public) and [official CITF National Covid-​19 Immunisation Programme repository](https://github.com/CITF-Malaysia/citf-public) to promote this project!
 
+# Data set compatibility
+This API is compatible with all COVID-19 data from 2021-08-11 onwards.
+
 # Available APIs
 ### Epidemic data
 | Name | Description | URL endpoint | Status |
