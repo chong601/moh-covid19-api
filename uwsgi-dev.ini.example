@@ -1,3 +1,4 @@
+# Duplicate this file and remove .example to use this uWSGI config
 [uwsgi]
 module = wsgi:app
 master = true

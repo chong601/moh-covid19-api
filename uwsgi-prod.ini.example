@@ -1,5 +1,7 @@
+# Duplicate this file and remove .example to use this uWSGI config
 [uwsgi]
 module = wsgi:app
+# Enable master mode
 master = true
 # replace processes to the number of physical cores!
 processes = 2
@@ -14,5 +16,7 @@ socket = /tmp/covid19api.sock
 threads = true
 # Allow termination of uWSGI instance on SIGTERM (eg from systemctl stop/restart)
 die-on-term = true
+# Adjust the path to where you want to store the log files
 logger = file:/home/ubuntu/moh-covid19-api/uwsgi-prod.log
+# Limit the log file to 20 MB
 log-maxsize = 20971520
