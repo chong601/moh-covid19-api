@@ -1,0 +1,20 @@
+[Unit]
+Description=uWSGI instance to serve moh-covid19-api
+# ONLY start after network.target systemd target has reached
+After=network.target
+
+[Service]
+# Replace user with the user where the Python files are located
+User=ubuntu
+# Adjust to the webserver group you use (this assumes NGINX)
+Group=www-data
+# Adjust to the path where the project is cloned at
+WorkingDirectory=/home/ubuntu/moh-covid19-api
+# Add the `bin` directory of the venv to PATH
+Environment="PATH=/home/ubuntu/moh-covid19-api/venv/bin"
+# Adjust the path to venv
+ExecStart=/home/ubuntu/moh-covid19-api/venv/bin/uwsgi --ini uwsgi-prod.ini
+
+[Install]
+# Start this service as soon as the OS reaches multi-user.target systemd target
+WantedBy=multi-user.target
