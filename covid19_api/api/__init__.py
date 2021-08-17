@@ -11,7 +11,7 @@ MAX_RESULTS_PER_PAGE = 100
 app = Flask(__name__)
 
 # Database configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://chong601:chong601@10.102.7.97/moh_covid19_api'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://chong601:chong601@10.102.0.5/moh_covid19_api'
 # Disable JSON key ordering.
 # Fuck this took fucking forever to figure out.
 # This setting is completely cosmetic, but used because most API put keys on top
@@ -43,7 +43,7 @@ from .namespaces.vaccination import api as vax_api
 alpha_blueprint = Blueprint('api', __name__, url_prefix='/api/alpha')
 
 # Create Flask-RestX Api
-api = Api(alpha_blueprint, title='MOH COVID-19 REST API', version='alpha', description='Swagger interface for MOH COVID-19 REST API', doc='/ui/', ordered=True)
+api = Api(alpha_blueprint, title='MOH COVID-19 REST API', version='0.2-alpha', description='Swagger interface for MOH COVID-19 REST API', doc='/ui/', ordered=True)
 
 # Add namespaces
 api.add_namespace(epidemic_api)
