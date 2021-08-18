@@ -242,7 +242,19 @@ class CasesStateByDate(Resource):
 
     @api.expect(pagination_parser)
     @api.marshal_with(cases_state, as_list=True, skip_none=True)
+    @api.doc(responses={404: 'Not Found'})
     def get(self, state):
+        """
+        Returns new cases for a state with pagination support.
+
+        State name is case-insensitive.
+
+        Defaults to get new cases for the last 7 days if page and size are not defined, in ascending date order.
+
+        Size parameter is optional and defaults to 10 items.
+
+        Note: Size parameter only applies to number of days, not number of items!
+        """
         args: dict = pagination_parser.parse_args()
         page = args.get('page') or 1
         size = args.get('size') or 7
@@ -273,7 +285,14 @@ class CasesStateByDate(Resource):
 class CasesStateByStateWithPagination(Resource):
 
     @api.marshal_with(cases_state, as_list=True, skip_none=True)
+    @api.doc(responses={404: 'Not Found'})
     def get(self, state, date):
+        """
+        Returns new cases for a state on the specified date.
+
+        State name is case-insensitive.
+        Date format follows ISO-8601 date format (YYYY-MM-DD eg. 2021-08-03).
+        """
         query = db.session.query(CasesState)
 
         if state != 'all':
@@ -297,7 +316,13 @@ class AllClusters(Resource):
     @api.expect(pagination_parser)
     @api.marshal_with(clusters, as_list=True, skip_none=True)
     def get(self):
+        """
+        Returns country-wide clusters with pagination support.
 
+        Defaults to get top 10 clusters with active case count in descending order.
+
+        Size parameter is optional and defaults to 10 items.
+        """
         args: dict = pagination_parser.parse_args()
         page = args.get('page') or 1
         size = args.get('size') or 10
@@ -319,7 +344,11 @@ class AllClusters(Resource):
 class AvailableClustersState(Resource):
 
     def get(self):
+        """
+        Get list of states with clusters.
 
+        Returns a list of states available for query.
+        """
         return {'available_states': [
             "Johor",
             "Kedah",
@@ -346,7 +375,13 @@ class GetClusterDataByState(Resource):
     @api.expect(pagination_parser)
     @api.marshal_with(clusters, as_list=True, skip_none=True)
     def get(self, state):
+        """
+        Get all clusters by state.
 
+        State name is case-insensitive.
+        Defaults to get the first 10 available clusters in the state.
+        Size parameter is optional and defaults to 10 items.
+        """
         args: dict = pagination_parser.parse_args()
         page = args.get('page') or 1
         size = args.get('size') or 10
@@ -372,14 +407,19 @@ class GetClusterDataByState(Resource):
 #   - Which is fine, but the problem is the names are not consistent (from a quick glance)
 #     Which makes storing a separate table to store the district names can be complex and prone to
 #     duplicates.
+#   - There's a good news though: it may be possible to get district names and store it in a separate
+#     table, but have to cater for situations where district names are not _always_ consistent.
+#     Or just screw it and use the district names as-is.
 #
-# Nevertheless, I will implement it anyway, but expect district searching to have weird quirks.
+# Nevertheless, I will implement it anyway when time permits, but expect district searching 
+# to have weird quirks.
 
 
 @api.route('/clusters/status')
 class GetClusterStatusList(Resource):
 
     def get(self):
+        """Get a list of available cluster status available for query."""
         query = db.session.query(Clusters.status).distinct(Clusters.status)
 
         return {'available_status': [status for status, in query.all()]}
@@ -391,7 +431,13 @@ class GetClusterDataByStatus(Resource):
     @api.expect(pagination_parser)
     @api.marshal_with(clusters, as_list=True, skip_none=True)
     def get(self, status):
+        """
+        Get all clusters with the specified status.
 
+        Status name is case-insensitive.
+        Defaults to get the first 10 available clusters of the given status.
+        Size parameter is optional and defaults to 10 items.
+        """
         args: dict = pagination_parser.parse_args()
         page = args.get('page') or 1
         size = args.get('size') or 10
@@ -410,9 +456,8 @@ class GetClusterDataByStatus(Resource):
 @api.route('/clusters/category')
 class ClustersListAllCategories(Resource):
 
-    
     def get(self):
-
+        """Get all available cluster categories available for query."""
         query = db.session.query(Clusters.category).distinct(Clusters.category)
 
         return {'available_categories': [category for category, in query.all()]}
@@ -424,7 +469,13 @@ class GetClusterDataByCategory(Resource):
     @api.expect(pagination_parser)
     @api.marshal_with(clusters, as_list=True, skip_none=True)
     def get(self, category: str):
+        """
+        Get all clusters with the specified category.
 
+        Category name is case-insensitive.
+        Defaults to get the first 10 available clusters of the given category.
+        Size parameter is optional and defaults to 10 items.
+        """
         args: dict = pagination_parser.parse_args()
         page = args.get('page') or 1
         size = args.get('size') or 10
@@ -444,7 +495,13 @@ class ClusterByName(Resource):
     @api.expect(pagination_parser)
     @api.marshal_with(clusters, as_list=True, skip_none=True)
     def get(self, name: str):
-        
+        """
+        Get cluster data by cluster name
+
+        Cluster name is case-insensitive.
+        Defaults to get the first 10 available clusters of the given category.
+        Size parameter is optional and defaults to 10 items.
+        """
         query = db.session.query(Clusters).filter(Clusters.cluster.ilike(f'%{name}%'))
         result = query.all()
         if result:
@@ -458,7 +515,13 @@ class DeathsMalaysiaWithPagination(Resource):
     @api.expect(pagination_parser)
     @api.marshal_with(deaths_malaysia, as_list=True, skip_none=True)
     def get(self):
+        """
+        Get country-wide new deaths with pagination support.
 
+        Defaults to get new cases for the last 7 days if page or size is not defined, in ascending date order.
+
+        Size parameter is optional and defaults to 10 items.
+        """
         args: dict = pagination_parser.parse_args()
         page = args.get('page') or 1
         size = args.get('size') or 7
@@ -483,6 +546,11 @@ class DeathsMalaysiaByDate(Resource):
 
     @api.marshal_with(deaths_malaysia)
     def get(self, date):
+        """
+        Get country-wide new deaths based on date provided.
+
+        Date format follows ISO-8601 date format (YYYY-MM-DD eg. 2021-08-03).
+        """
         query = db.session.query(DeathsMalaysia).filter(DeathsMalaysia.date == date)
         if db.session.query(query.exists()).scalar():
             result = query.first()
@@ -496,6 +564,15 @@ class DeathsStatewithPagination(Resource):
     @api.expect(pagination_parser)
     @api.marshal_with(deaths_state, as_list=True, skip_none=True)
     def get(self):
+        """
+        Get per-state new deaths on per-state basis with pagination support.
+
+        Defaults to get new cases for the last 7 days if page and size are not defined, in ascending date order.
+
+        Size parameter is optional and defaults to 10 days worth of data.
+
+        Note: Size parameter only applies to number of days, not number of items!
+        """
         args: dict = pagination_parser.parse_args()
         page = args.get('page') or 1
         # We don't use size against the final result, instead on the number of dates
@@ -526,6 +603,17 @@ class DeathsStateByStateWithPagination(Resource):
     @api.expect(pagination_parser)
     @api.marshal_with(deaths_state, as_list=True, skip_none=True)
     def get(self, state):
+        """
+        Returns new deaths for a state with pagination support.
+
+        State name is case-insensitive.
+
+        Defaults to get new cases for the last 7 days if page and size are not defined, in ascending date order.
+
+        Size parameter is optional and defaults to 10 items.
+
+        Note: Size parameter only applies to number of days, not number of items!
+        """
         args: dict = pagination_parser.parse_args()
         page = args.get('page') or 1
         size = args.get('size') or 7
@@ -557,6 +645,12 @@ class DeathsStateByStateByDate(Resource):
 
     @api.marshal_with(deaths_state, skip_none=True)
     def get(self, state, date):
+        """
+        Returns new deaths for a state on the specified date.
+
+        State name is case-insensitive.
+        Date format follows ISO-8601 date format (YYYY-MM-DD eg. 2021-08-03).
+        """
         query = db.session.query(DeathsState).filter(DeathsState.state.ilike(state), DeathsState.date == date)
         if db.session.query(query.exists()).scalar():
             result = query.first()
