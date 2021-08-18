@@ -4,7 +4,7 @@ Because speedrunning code writing is fun™. ~~And it took longer than what I th
 
 Jokes aside, this project provides [Ministry of Health Malaysia COVID-19 statistics](https://github.com/MoH-Malaysia/covid19-public) and [COVID-19 Immunisation Task Force (CITF) public vaccination](https://github.com/CITF-Malaysia/citf-public) data in API form.
 
-URL to the API will be defined soon™.
+Alpha-version of the API is available at https://moh-covid19-api.chong601.cloud/api/alpha/ui.
 
 # Things to work on
 - [phase 2 in-progress] Better database model (the source data makes it difficult to build one)
