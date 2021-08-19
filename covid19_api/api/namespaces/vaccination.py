@@ -55,6 +55,13 @@ class VaxMalaysiaWithPagination(Resource):
     @api.expect(pagination_parser)
     @api.marshal_with(vax_malaysia, as_list=True, skip_none=True)
     def get(self):
+        """
+        Get country-wide vaccination data with pagination support
+
+        Defaults to vaccination data for the last 7 days sorted by date in ascending order.
+
+        Size parameter is optional and defaults to 10.
+        """
         args: dict = pagination_parser.parse_args()
         page = args.get('page') or 1
         size = args.get('size') or 7
@@ -77,6 +84,12 @@ class VaxMalaysiaByDate(Resource):
 
     @api.marshal_with(vax_malaysia, skip_none=True)
     def get(self, date):
+        """
+        Get vaccination data by date
+
+        Defaults to vaccination data for the last 7 days sorted by date in ascending order.
+        Size parameter is optional and defaults to 10.
+        """
         query = db.session.query(VaxMalaysia).filter(VaxMalaysia.date == date)
         if db.session.query(query.exists()).scalar():
             result = query.first()
@@ -90,6 +103,12 @@ class VaxStateWithPagination(Resource):
     @api.expect(pagination_parser)
     @api.marshal_with(vax_state, as_list=True, skip_none=True)
     def get(self):
+        """
+        Get country-wide vaccination data with pagination support
+
+        Defaults to vaccination data for the last 7 days sorted by date in ascending order.
+        Size parameter is optional and defaults to 10.
+        """
         args: dict = pagination_parser.parse_args()
         page = args.get('page') or 1
         # We don't use size against the final result, instead on the number of dates
@@ -138,6 +157,13 @@ class VaxStateByStateWithPagination(Resource):
     @api.expect(pagination_parser)
     @api.marshal_with(vax_state, as_list=True, skip_none=True)
     def get(self, state=None):
+        """
+        Get vaccination data by date
+
+        Defaults to vaccination data for the last 7 days sorted by date in ascending order.
+        Size parameter is optional and defaults to 10.
+        """
+        
         args: dict = pagination_parser.parse_args()
         page = args.get('page') or 1
         size = args.get('size') or 7

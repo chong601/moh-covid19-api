@@ -25,6 +25,7 @@ class PopulationData(Resource):
 
     @api.marshal_with(population, as_list=True, skip_none=True)
     def get(self):
+        """Get all state population data"""
         result = db.session.query(Population).all()
         if result:
             return result
@@ -36,6 +37,7 @@ class PopulationDataByStateName(Resource):
 
     @api.marshal_with(population, skip_none=True)
     def get(self, state):
+        """Get state population data by state name"""
         query = db.session.query(Population).filter(Population.state.ilike(f'%{state}'))
         if db.session.query(query.exists()).scalar():
             result = query.first()

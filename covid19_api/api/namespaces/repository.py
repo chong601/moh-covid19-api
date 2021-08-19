@@ -22,6 +22,9 @@ class RepositoryFullDetails(Resource):
 
     @api.marshal_with(repository, as_list=True)
     def get(self):
+        """
+        Get all available hosted repositories.
+        """
         result = db.session.query(RepositoryUpdateStatus).all()
         if result:
             return result
@@ -33,6 +36,9 @@ class RepositoryDetailByRepositoryName(Resource):
 
     @api.marshal_with(repository)
     def get(self, repository_name):
+        """
+        Get repository data by repository name.
+        """
         query = db.session.query(RepositoryUpdateStatus).filter(RepositoryUpdateStatus.repository_name == repository_name)
         if db.session.query(query.exists()).scalar():
             return query.first()
