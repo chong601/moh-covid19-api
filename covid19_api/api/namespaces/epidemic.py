@@ -664,6 +664,15 @@ class HospitalWithPagination(Resource):
     @api.expect(pagination_parser)
     @api.marshal_with(hospital)
     def get(self):
+        """
+        Returns hospital data on per-state basis with pagination support.
+
+        Defaults to hospital data from all states for the last 7 days if page and size are not defined, in ascending date order.
+
+        Size parameter is optional and defaults to 10 items.
+
+        Note: Size parameter only applies to number of days, not number of items!
+        """
         args: dict = pagination_parser.parse_args()
         page = args.get('page') or 1
         # We don't use size against the final result, instead on the number of dates
@@ -713,6 +722,15 @@ class HospitalByStateWithPagination(Resource):
     @api.expect(pagination_parser)
     @api.marshal_with(hospital, as_list=True, skip_none=True)
     def get(self, state=None):
+        """
+        Returns hospital data on specific state with pagination support.
+
+        Defaults to hospital data for the last 7 days if page and size are not defined, in ascending date order.
+
+        Size parameter is optional and defaults to 10 items.
+
+        Note: Size parameter only applies to number of days, not number of items!
+        """
         args: dict = pagination_parser.parse_args()
         page = args.get('page') or 1
         size = args.get('size') or 7
@@ -768,6 +786,12 @@ class HospitalByStateByDateWithPagination(Resource):
 
     @api.marshal_with(hospital, skip_none=True)
     def get(self, state=None, date=None):
+        """
+        Returns hospital data for a state on the specified date.
+
+        State name is case-insensitive.
+        Date format follows ISO-8601 date format (YYYY-MM-DD eg. 2021-08-03).
+        """
         query = db.session.query(HospitalByState)
         if state == 'all':
             query = query.filter(HospitalByState.date == date)
@@ -786,6 +810,15 @@ class ICUWithPagination(Resource):
     @api.expect(pagination_parser)
     @api.marshal_with(icu, as_list=True, skip_none=True)
     def get(self):
+        """
+        Returns ICU data on per-state basis with pagination support.
+
+        Defaults to ICU data from all states for the last 7 days if page and size are not defined, in ascending date order.
+
+        Size parameter is optional and defaults to 10 items.
+
+        Note: Size parameter only applies to number of days, not number of items!
+        """
         args: dict = pagination_parser.parse_args()
         page = args.get('page') or 1
         # We don't use size against the final result, instead on the number of dates
@@ -835,6 +868,15 @@ class ICUByStateWithPagination(Resource):
     @api.expect(pagination_parser)
     @api.marshal_with(icu, as_list=True, skip_none=True)
     def get(self, state=None):
+        """
+        Returns ICU data on specific state with pagination support.
+
+        Defaults to ICU data for the last 7 days if page and size are not defined, in ascending date order.
+
+        Size parameter is optional and defaults to 10 items.
+
+        Note: Size parameter only applies to number of days, not number of items!
+        """
         args: dict = pagination_parser.parse_args()
         page = args.get('page') or 1
         size = args.get('size') or 7
@@ -890,6 +932,12 @@ class ICUByStateByDateWithPagination(Resource):
 
     @api.marshal_with(icu, as_list=True, skip_none=True)
     def get(self, state=None, date=None):
+        """
+        Returns ICU data for a state on the specified date.
+
+        State name is case-insensitive.
+        Date format follows ISO-8601 date format (YYYY-MM-DD eg. 2021-08-03).
+        """
         query = db.session.query(ICUByState)
         if state == 'all':
             query = query.filter(ICUByState.date == date)
@@ -908,6 +956,15 @@ class PKRCWithPagination(Resource):
     @api.expect(pagination_parser)
     @api.marshal_with(pkrc, as_list=True, skip_none=True)
     def get(self):
+        """
+        Returns PKRC data on per-state basis with pagination support.
+
+        Defaults to PKRC data from all states for the last 7 days if page and size are not defined, in ascending date order.
+
+        Size parameter is optional and defaults to 10 items.
+
+        Note: Size parameter only applies to number of days, not number of items!
+        """
         args: dict = pagination_parser.parse_args()
         page = args.get('page') or 1
         # We don't use size against the final result, instead on the number of dates
@@ -957,6 +1014,15 @@ class PKRCByStateWithPagination(Resource):
     @api.expect(pagination_parser)
     @api.marshal_with(pkrc, as_list=True, skip_none=True)
     def get(self, state=None):
+        """
+        Returns PKRC data on specific state with pagination support.
+
+        Defaults to PKRC data for the last 7 days if page and size are not defined, in ascending date order.
+
+        Size parameter is optional and defaults to 10 items.
+
+        Note: Size parameter only applies to number of days, not number of items!
+        """
         args: dict = pagination_parser.parse_args()
         page = args.get('page') or 1
         size = args.get('size') or 7
@@ -1012,6 +1078,12 @@ class PKRCByStateByDateWithPagination(Resource):
 
     @api.marshal_with(icu, as_list=True, skip_none=True)
     def get(self, state=None, date=None):
+        """
+        Returns hospital data for a state on the specified date.
+
+        State name is case-insensitive.
+        Date format follows ISO-8601 date format (YYYY-MM-DD eg. 2021-08-03).
+        """
         query = db.session.query(PKRCByState)
         if state == 'all':
             query = query.filter(PKRCByState.date == date)
@@ -1030,6 +1102,13 @@ class TestsMalaysiaWithPagination(Resource):
     @api.expect(pagination_parser)
     @api.marshal_with(tests_malaysia, as_list=True, skip_none=True)
     def get(self):
+        """
+        Returns country-wide testing data with pagination support.
+
+        Defaults to get testing data for the last 7 days if page and size are not defined, in ascending date order.
+
+        Size parameter is optional and defaults to 10 items.
+        """
         args: dict = pagination_parser.parse_args()
         page = args.get('page') or 1
         size = args.get('size') or 7
@@ -1053,6 +1132,11 @@ class TestsMalaysiaByDate(Resource):
 
     @api.marshal_with(tests_malaysia, skip_none=True)
     def get(self, date):
+        """
+        Returns country-wide testing data based on date provided.
+
+        Date format follows ISO-8601 date format (YYYY-MM-DD eg. 2021-08-03).
+        """
         query = db.session.query(TestsMalaysia).filter(TestsMalaysia.date == date)
         if db.session.query(query.exists()).scalar():
             result = query.first()
