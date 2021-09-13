@@ -1,4 +1,5 @@
 from datetime import datetime
+from hashlib import md5
 
 # Ew.
 # I just dislike the fact that convert date function HAS to live in constants module
@@ -6,6 +7,11 @@ from datetime import datetime
 def convert_date(date: str):
     # Double-conversion because strptime returns datetime, not date
     return datetime.date(datetime.strptime(date, '%Y-%m-%d'))
+
+
+def hash_column_data(col_arr: list):
+    col_arr.sort()
+    return md5(bytes(''.join(col_arr), encoding='utf8')).hexdigest()
 
 
 ROW_VERSION = {
@@ -144,6 +150,83 @@ DATA_CONVERSION_DICT = {
         1: {'date': convert_date, 'dose1_daily': int, 'dose2_daily': int, 'total_daily': int, 'dose1_cumul': int, 'dose2_cumul': int, 'total_cumul': int},
         2: {'date': convert_date, 'daily_partial': int, 'daily_full': int, 'daily': int, 'cumul_partial': int, 'cumul_full': int, 'cumul': int, 'pfizer1': int, 'pfizer2': int, 'sinovac1': int, 'sinovac2': int, 'astra1': int, 'astra2': int, 'pending': int}
     }
+}
+
+SUPPORTED_CSV_DATA = {
+    'cases_malaysia': [
+        hash_column_data(['date','cases_new']),
+        hash_column_data(['date','cases_new','cluster_import','cluster_religious','cluster_community','cluster_highRisk','cluster_education','cluster_detentionCentre','cluster_workplace'])
+    ],
+    'cases_state': [
+        hash_column_data(['date','state','cases_new'])
+    ],
+
+    'clusters': [
+        hash_column_data(['cluster','state','district','date_announced','date_last_onset','category','status','cases_new','cases_total','cases_active','tests','icu','deaths','recovered'])
+    ],
+
+    'deaths_malaysia': [
+        hash_column_data(['date','deaths_new'])
+    ],
+
+    'deaths_state': [
+        hash_column_data(['date','state','deaths_new'])
+    ],
+
+    'hospital': [
+        hash_column_data(['date','state','beds','beds_noncrit','admitted_pui','admitted_covid','admitted_total','discharged_pui','discharged_covid','discharged_total','hosp_covid','hosp_pui','hosp_noncovid']),
+        hash_column_data(['date','state','beds','beds_covid','beds_noncrit','admitted_pui','admitted_covid','admitted_total','discharged_pui','discharged_covid','discharged_total','hosp_covid','hosp_pui','hosp_noncovid'])
+    ],
+
+    'icu': [
+        hash_column_data(['date','state','bed_icu','bed_icu_rep','bed_icu_total','bed_icu_covid','vent','vent_port','icu_covid','icu_pui','icu_noncovid','vent_covid','vent_pui','vent_noncovid']),
+        hash_column_data(['date','state','beds_icu','beds_icu_rep','beds_icu_total','beds_icu_covid','vent','vent_port','icu_covid','icu_pui','icu_noncovid','vent_covid','vent_pui','vent_noncovid'])
+    ],
+
+    'pkrc': [
+        hash_column_data(['date','state','beds','admitted_pui','admitted_covid','admitted_total','discharge_pui','discharge_covid','discharge_total','pkrc_covid','pkrc_pui','pkrc_noncovid'])
+    ],
+
+    'tests_malaysia': [
+        hash_column_data(['date','rtk-ag','pcr'])
+    ],
+
+    'checkin_malaysia_time': [
+        hash_column_data(['date','0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','38','39','40','41','42','43','44','45','46','47'])
+    ],
+
+    'checkin_malaysia':[
+        hash_column_data(['date','checkins','unique_ind','unique_loc'])
+    ],
+
+    'checkin_state': [
+        hash_column_data(['date','state','checkins','unique_ind','unique_loc'])
+    ],
+
+    'trace_malaysia': [
+        hash_column_data(['date','casual_contacts']),
+        hash_column_data(['date','casual_contacts','hide_large','hide_small'])
+    ],
+    'population': [
+        hash_column_data(['state','idxs','pop','pop_18','pop_60'])
+    ],
+    'vaxreg_malaysia': [
+        hash_column_data(['date', 'state', 'total', 'phase2', 'mysj', 'call', 'web', 'children', 'elderly', 'comorb', 'oku'])
+    ],
+    'vaxreg_state': [
+        hash_column_data(['date', 'state', 'total', 'phase2', 'mysj', 'call', 'web', 'children', 'elderly', 'comorb', 'oku'])
+    ],
+    'vax_malaysia': [
+        hash_column_data(['date', 'dose1_daily', 'dose2_daily', 'total_daily', 'dose1_cumul', 'dose2_cumul', 'total_cumul']),
+        hash_column_data(['date', 'daily_partial', 'daily_full', 'daily', 'cumul_partial', 'cumul_full', 'cumul', 'pfizer1', 'pfizer2', 'sinovac1', 'sinovac2', 'astra1', 'astra2', 'pending'])
+    ],
+    'vax_state': [
+        hash_column_data(['date', 'state', 'dose1_daily', 'dose2_daily', 'total_daily', 'dose1_cumul', 'dose2_cumul', 'total_cumul']),
+        hash_column_data(['date', 'state', 'daily_partial', 'daily_full', 'daily', 'cumul_partial', 'cumul_full', 'cumul', 'pfizer1', 'pfizer2', 'sinovac1', 'sinovac2', 'astra1', 'astra2', 'pending'])
+    ],
+    'linelist_deaths': [
+        hash_column_data(['date', 'date_positive', 'date_dose1', 'date_dose2', 'vaxtype', 'state', 'age', 'male', 'bid', 'malaysian', 'comorb'])
+    ]
 }
 
 REMAP_DATA = {

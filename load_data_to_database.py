@@ -1,4 +1,4 @@
-from covid19_api.db_model.utils import parse_csv
+from covid19_api.db_model.utils import parse_csv, check_csv_file_support
 import os
 from covid19_api.api import db
 from covid19_api.db_model.sqlalchemy_models import *
@@ -76,6 +76,14 @@ for module_name, module_details in AVAILABLE_MODULES.items():
             real_file_path = os.path.join(current_dir, category_name, filename)
             repository_name = filename.rsplit('.')[0]
             file_hash = hash_file(real_file_path)
+
+            csv_file_support = check_csv_file_support(real_file_path, repository_name)
+            if csv_file_support is None:
+                print('This CSV file is not recognized. Please file a bug report')
+                continue
+            elif not csv_file_support:
+                print('This CSV file has a different column structure than expected. Please file a bug report')
+                continue 
 
             update_dict = {
                 'repository_name': repository_name,
