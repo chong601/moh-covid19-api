@@ -3,6 +3,7 @@ import os
 from covid19_api.api import db
 from covid19_api.db_model.sqlalchemy_models import *
 from hashlib import sha256
+from covid19_api.db_model.constants import *
 
 COVID19_FILE_LIST = {
     'epidemic': [
@@ -41,12 +42,12 @@ VACCINATION_FILE_LIST = {
 AVAILABLE_MODULES = {
     'covid19': {
         'filelist': COVID19_FILE_LIST,
-        'path': os.path.join('covid19-public-main', 'latest'),
+        'path': os.path.join('covid19-public'),
         'name': 'COVID-19 data'
     },
     'vaccination': {
         'filelist': VACCINATION_FILE_LIST,
-        'path': os.path.join('citf-public-main', 'latest'),
+        'path': os.path.join('citf-public'),
         'name': 'vaccination data'
     }
 }
@@ -100,37 +101,58 @@ for module_name, module_details in AVAILABLE_MODULES.items():
 
             print(f'Start parsing {category_name} from CSV file {filename}')
 
-            data_array = parse_csv(real_file_path, repository_name)
-            if db.session.query(entry_dict['model']).count() == 0:
-                print(f'{filename.rsplit(".", 1)[0]} is a fresh import. Using bulk saving method...')
-            else:
-                print(f'{filename.rsplit(".", 1)[0]} is a new data update. Purging existing data...')
-                db.session.query(entry_dict['model']).delete()
-                print('Purge completed. Flushing changes into database...')
-                db.session.flush()
-                print('Flush complete. Start importing new data using bulk saving method.')
+            csv_row_data: dict = parse_csv(real_file_path, repository_name)
+            data_array = []
+            for index, data in csv_row_data:
+                row_with_data = [x.strip() for x, y in data.items() if y.strip()]
+                version_number = ROW_VERSION[repository_name][hash(frozenset(row_with_data))]
+                temp_row = {k.strip(): v.strip() for k, v in data.items() if k.strip() in row_with_data}
+                temp_row['row_id'] = index
+                temp_row['row_version'] = version_number
+                print(temp_row)
+                conv_func: dict = DATA_CONVERSION_DICT[repository_name][temp_row['row_version']]
+                row = list(temp_row.keys())
+                for key in row:
+                    if key in conv_func:
+                        temp_row[key] = conv_func.get(key)(temp_row[key])
+                if REMAP_DATA.get(repository_name, None) is not None:
+                    for key in row:
+                        if key in REMAP_DATA[repository_name]:
+                            temp_data = temp_row[key]
+                            del temp_row[key]
+                            temp_row[REMAP_DATA[repository_name][key]] = temp_data
+                data_array.append(temp_row)
 
-            data_array = [entry_dict['model'](**dict_data) for dict_data in data_array]
-            db.session.bulk_save_objects(data_array)
-            db.session.flush()
-            print('Bulk save completed')
+            # if db.session.query(entry_dict['model']).count() == 0:
+            #     print(f'{filename.rsplit(".", 1)[0]} is a fresh import. Using bulk saving method...')
+            # else:
+            #     print(f'{filename.rsplit(".", 1)[0]} is a new data update. Purging existing data...')
+            #     db.session.query(entry_dict['model']).delete()
+            #     print('Purge completed. Flushing changes into database...')
+            #     db.session.flush()
+            #     print('Flush complete. Start importing new data using bulk saving method.')
 
-            updated_data = {
-                'last_update': datetime.now(),
-                'repository_hash': file_hash
-            }
-            if db.session.query(RepositoryUpdateStatus.repository_name, RepositoryUpdateStatus.repository_category).filter_by(**update_dict).count():
-                print(f'Updating {repository_name} repository status...')
-                obj = db.session.query(RepositoryUpdateStatus).filter_by(**update_dict).update(updated_data)
-                print('Update complete')
-            else:
-                update_dict.update(updated_data)
-                print(f'Saving {repository_name} entry details...')
-                db.session.add(RepositoryUpdateStatus(**update_dict))
-                print('Save completed.')
-            print('Committing changes to database...')
-            db.session.commit()
-            print('Commit to database success.')
-            print(f'Finish parsing {category_name} from CSV file {entry_dict["filename"]}')
+            # data_array = [entry_dict['model'](**dict_data) for dict_data in data_array]
+            # db.session.bulk_save_objects(data_array)
+            # db.session.flush()
+            # print('Bulk save completed')
+
+            # updated_data = {
+            #     'last_update': datetime.now(),
+            #     'repository_hash': file_hash
+            # }
+            # if db.session.query(RepositoryUpdateStatus.repository_name, RepositoryUpdateStatus.repository_category).filter_by(**update_dict).count():
+            #     print(f'Updating {repository_name} repository status...')
+            #     obj = db.session.query(RepositoryUpdateStatus).filter_by(**update_dict).update(updated_data)
+            #     print('Update complete')
+            # else:
+            #     update_dict.update(updated_data)
+            #     print(f'Saving {repository_name} entry details...')
+            #     db.session.add(RepositoryUpdateStatus(**update_dict))
+            #     print('Save completed.')
+            # print('Committing changes to database...')
+            # db.session.commit()
+            # print('Commit to database success.')
+            # print(f'Finish parsing {category_name} from CSV file {entry_dict["filename"]}')
     print(f"Finish processing {module_details['name']}")
 print('Import complete.')
