@@ -13,7 +13,9 @@ class CasesMalaysia(db.Model, object):
     row_id: int = Column(Integer, primary_key=True, autoincrement=False, comment='Case ID')
     row_version: int = Column(Integer, comment="Row version")
     date: PyDate = Column(SQLDate, comment='Case date')
-    cases_new: int = Column(Integer, comment='New cases')
+    cases_new: int = Column(Integer, comment='New local cases')
+    cases_import: int = Column(Integer, comment='New import cases')
+    cases_recovered: int = Column(Integer, comment='Recovered cases')
     cluster_import: int = Column(Integer, default=None, comment='Import new cases')
     cluster_religious: int = Column(Integer, default=None, comment='Religious new cases')
     cluster_community: int = Column(Integer, default=None, comment='Community new cases')
@@ -35,7 +37,9 @@ class CasesState(db.Model, object):
     row_version: int = Column(Integer, comment="Row version")
     date: PyDate = Column(SQLDate, comment='Case date')
     state: str = Column(Text, comment='State name')
-    cases_new: int = Column(Integer, comment='New cases')
+    cases_import: int = Column(Integer, comment='New import cases')
+    cases_new: int = Column(Integer, comment='New local cases')
+    cases_recovered: int = Column(Integer, comment='Recovered cases')
 
     def __init__(self, **kwargs) -> None:
         for k, v in kwargs.items():
@@ -75,7 +79,12 @@ class DeathsMalaysia(db.Model, object):
     row_id: int = Column(Integer, primary_key=True, autoincrement=False, comment='Deaths ID')
     row_version: int = Column(Integer, comment='Row version')
     date: PyDate = Column(SQLDate, comment='Reported date')
+    # FIXME: Change comment when the government _eventually_ update the CSV file details
+    # Guessing what these data means are annoying.
     deaths_new: int = Column(Integer, comment='New deaths for the reported date')
+    deaths_new_dod: int = Column(Integer, comment='New deaths for the reported date')
+    deaths_bid: int = Column(Integer, comment='New deaths for the reported date')
+    deaths_new_dod: int = Column(Integer, comment='New deaths for the reported date')
 
     def __init__(self, **kwargs) -> None:
         for k, v in kwargs.items():

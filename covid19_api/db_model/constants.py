@@ -17,11 +17,15 @@ def hash_column_data(col_arr: list):
 ROW_VERSION = {
     'cases_malaysia': {
         hash(frozenset(['date','cases_new'])): 1,
-        hash(frozenset(['date','cases_new','cluster_import','cluster_religious','cluster_community','cluster_highRisk','cluster_education','cluster_detentionCentre','cluster_workplace'])): 2
+        hash(frozenset(['date','cases_new','cluster_import','cluster_religious','cluster_community','cluster_highRisk','cluster_education','cluster_detentionCentre','cluster_workplace'])): 2,
+        hash(frozenset(['date','cases_new','cases_import','cases_recovered'])): 3,
+        hash(frozenset(['date','cases_new','cases_import','cases_recovered','cluster_import','cluster_religious','cluster_community','cluster_highRisk','cluster_education','cluster_detentionCentre','cluster_workplace'])): 4,
     },
 
     'cases_state': {
-        hash(frozenset(['date','state','cases_new'])): 1
+        hash(frozenset(['date','state','cases_new'])): 1,
+        hash(frozenset(['date','state','cases_import','cases_new','cases_recovered'])): 2,
+        
     },
 
     'clusters': {
@@ -29,7 +33,8 @@ ROW_VERSION = {
     },
 
     'deaths_malaysia': {
-        hash(frozenset(['date','deaths_new'])): 1
+        hash(frozenset(['date','deaths_new'])): 1,
+        hash(frozenset(['date','deaths_new','deaths_new_dod','deaths_bid','deaths_bid_dod'])): 2
     },
 
     'deaths_state': {
@@ -92,13 +97,17 @@ ROW_VERSION = {
 DATA_CONVERSION_DICT = {
     'cases_malaysia': {
         1: {'date': convert_date, 'cases_new': int},
-        2: {'date': convert_date, 'cases_new': int, 'cluster_import': int, 'cluster_religious': int, 'cluster_community': int, 'cluster_highRisk': int, 'cluster_education': int, 'cluster_detentionCentre': int, 'cluster_workplace': int}
+        2: {'date': convert_date, 'cases_new': int, 'cluster_import': int, 'cluster_religious': int, 'cluster_community': int, 'cluster_highRisk': int, 'cluster_education': int, 'cluster_detentionCentre': int, 'cluster_workplace': int},
+        3: {'date':  convert_date,'cases_new': int,'cases_import': int,'cases_recovered': int},
+        4: {'date':  convert_date,'cases_new': int,'cases_import': int,'cases_recovered': int,'cluster_import': int,'cluster_religious': int,'cluster_community': int,'cluster_highRisk': int,'cluster_education': int,'cluster_detentionCentre': int,'cluster_workplace': int}
     },
     'cases_state': {
-        1: {'date': convert_date, 'cases_new': int}
+        1: {'date': convert_date, 'cases_new': int},
+        2: {'date': convert_date, 'cases_import': int, 'cases_new': int, 'cases_recovered': int}
     },
     'clusters': {
-        1: {'date_announced': convert_date,'date_last_onset': convert_date, 'cases_new':int,'cases_total':int, 'cases_active':int, 'tests':int, 'icu':int, 'deaths':int, 'recovered':int}
+        1: {'date_announced': convert_date,'date_last_onset': convert_date, 'cases_new':int,'cases_total':int, 'cases_active':int, 'tests':int, 'icu':int, 'deaths':int, 'recovered':int},
+        2: {'date': convert_date, 'deaths_new': int, 'deaths_new_dod': int, 'deaths_bid': int, 'deaths_bid_dod': int}
     },
     'deaths_malaysia': {
         1: {'date': convert_date, 'deaths_new': int}
@@ -155,10 +164,10 @@ DATA_CONVERSION_DICT = {
 SUPPORTED_CSV_DATA = {
     'cases_malaysia': [
         hash_column_data(['date','cases_new']),
-        hash_column_data(['date','cases_new','cluster_import','cluster_religious','cluster_community','cluster_highRisk','cluster_education','cluster_detentionCentre','cluster_workplace'])
+        hash_column_data(['date','cases_new', 'cases_import', 'cases_recovered','cluster_import','cluster_religious','cluster_community','cluster_highRisk','cluster_education','cluster_detentionCentre','cluster_workplace'])
     ],
     'cases_state': [
-        hash_column_data(['date','state','cases_new'])
+        hash_column_data(['date','state','cases_new']), hash_column_data(['date','state','cases_import','cases_new','cases_recovered'])
     ],
 
     'clusters': [
@@ -166,7 +175,7 @@ SUPPORTED_CSV_DATA = {
     ],
 
     'deaths_malaysia': [
-        hash_column_data(['date','deaths_new'])
+        hash_column_data(['date','deaths_new']), hash_column_data(['date','deaths_new','deaths_new_dod','deaths_bid','deaths_bid_dod'])
     ],
 
     'deaths_state': [
