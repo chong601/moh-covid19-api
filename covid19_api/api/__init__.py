@@ -11,7 +11,7 @@ MAX_RESULTS_PER_PAGE = 100
 app = Flask(__name__)
 
 # Database configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://chong601:chong601@10.102.0.5/moh_covid19_api'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://chong601:chong601@localhost/moh_covid19_api'
 # Disable JSON key ordering.
 # Fuck this took fucking forever to figure out.
 # This setting is completely cosmetic, but used because most API put keys on top
