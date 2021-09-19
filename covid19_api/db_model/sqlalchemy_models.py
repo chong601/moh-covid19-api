@@ -84,7 +84,7 @@ class DeathsMalaysia(db.Model, object):
     deaths_new: int = Column(Integer, comment='New deaths for the reported date')
     deaths_new_dod: int = Column(Integer, comment='New deaths for the reported date')
     deaths_bid: int = Column(Integer, comment='New deaths for the reported date')
-    deaths_new_dod: int = Column(Integer, comment='New deaths for the reported date')
+    deaths_bid_dod: int = Column(Integer, comment='New deaths for the reported date')
 
     def __init__(self, **kwargs) -> None:
         for k, v in kwargs.items():
@@ -104,7 +104,7 @@ class DeathsState(db.Model, object):
     deaths_new: int = Column(Integer, comment='New deaths for the reported date')
     deaths_new_dod: int = Column(Integer, comment='New deaths for the reported date')
     deaths_bid: int = Column(Integer, comment='New deaths for the reported date')
-    deaths_new_dod: int = Column(Integer, comment='New deaths for the reported date')
+    deaths_bid_dod: int = Column(Integer, comment='New deaths for the reported date')
 
     def __init__(self, **kwargs) -> None:
         for k, v in kwargs.items():
