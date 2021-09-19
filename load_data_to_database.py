@@ -75,9 +75,15 @@ for module_name, module_details in AVAILABLE_MODULES.items():
         for entry_dict in category_file_list:
             filename: str = entry_dict['filename']
             real_file_path = os.path.join(current_dir, category_name, filename)
-            repository_name = filename.rsplit('.')[0]
-            file_hash = hash_file(real_file_path)
-
+            # Accommodate repository name extraction with file paths
+            # It does it this way (assuming file name is 'epidemic/linelist/linelist_deaths.csv):
+            # 1) Split it based on path separator reported by Python 
+            #    ['epidemic', 'linelist', 'linelist_deaths.csv']
+            # 2) Get the last element
+            # 3) Split based on file separator
+            #    ['linelist_deaths', 'csv']
+            # 4) Get the first element
+            repository_name = filename.rsplit(os.path.sep)[-1].rsplit('.')[0]
             csv_file_support = check_csv_file_support(real_file_path, repository_name)
             if csv_file_support is None:
                 print(f'CSV file {real_file_path} is not recognized. Please file a bug report')
@@ -86,6 +92,7 @@ for module_name, module_details in AVAILABLE_MODULES.items():
                 print(f'CSV file {real_file_path} has a different column structure than expected. Please file a bug report')
                 continue 
 
+            file_hash = hash_file(real_file_path)
             update_dict = {
                 'repository_name': repository_name,
                 'repository_category': category_name

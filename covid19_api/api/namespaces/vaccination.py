@@ -21,6 +21,8 @@ vax_malaysia = api.model('vax_malaysia', {
     'sinovac2': fields.Integer(title='2nd dose of SinoVac vaccine delivered between 0000 and 2359 on date'),
     'astra1': fields.Integer(title='1st dose of AstraZeneca vaccine delivered between 0000 and 2359 on date'),
     'astra2': fields.Integer(title='2nd dose of AstraZeneca vaccine delivered between 0000 and 2359 on date'),
+    'astra2': fields.Integer(title='2nd dose of AstraZeneca vaccine delivered between 0000 and 2359 on date'),
+    'cansino': fields.Integer(title='Single-dose CanSino vaccine delivered between 0000 and 2359 on date'),
     'pending': fields.Integer(title='Doses delivered that are quarantined in VMS (Vaccine Management System)'),
 })
 
@@ -41,6 +43,7 @@ vax_state = api.model('vax_state', {
     'sinovac2': fields.Integer(title='2nd dose of SinoVac vaccine delivered between 0000 and 2359 on date'),
     'astra1': fields.Integer(title='1st dose of AstraZeneca vaccine delivered between 0000 and 2359 on date'),
     'astra2': fields.Integer(title='2nd dose of AstraZeneca vaccine delivered between 0000 and 2359 on date'),
+    'cansino': fields.Integer(title='Single-dose CanSino vaccine delivered between 0000 and 2359 on date'),
     'pending': fields.Integer(title='Doses delivered that are quarantined in VMS (Vaccine Management System)'),
 })
 

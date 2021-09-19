@@ -99,7 +99,12 @@ class DeathsState(db.Model, object):
     row_version: int = Column(Integer, comment='Row version')
     date: PyDate = Column(SQLDate, comment='Reported date')
     state: str = Column(Text, comment='State name')
+    # FIXME: Change comment when the government _eventually_ update the CSV file details
+    # Guessing what these data means are annoying.
     deaths_new: int = Column(Integer, comment='New deaths for the reported date')
+    deaths_new_dod: int = Column(Integer, comment='New deaths for the reported date')
+    deaths_bid: int = Column(Integer, comment='New deaths for the reported date')
+    deaths_new_dod: int = Column(Integer, comment='New deaths for the reported date')
 
     def __init__(self, **kwargs) -> None:
         for k, v in kwargs.items():
@@ -152,6 +157,8 @@ class ICUByState(db.Model, object):
     vent_covid: int = Column(Integer, comment='Total number of COVID individuals that require ventilator')
     vent_pui: int = Column(Integer, comment='Total number of PUI individuals that require ventilator')
     vent_noncovid: int = Column(Integer, comment='Total number of non-COVID individuals that require ventilator')
+    vent_used: int = Column(Integer, comment='Total ventilators in use')
+    vent_port_used: int = Column(Integer, comment='Total portable ventilator in use')
 
     def __init__(self, **kwargs) -> None:
         for k, v in kwargs.items():
@@ -415,6 +422,7 @@ class VaxMalaysia(db.Model, object):
     sinovac2: int = Column(Integer, comment='2nd dose of SinoVac vaccine delivered between 0000 and 2359 on date')
     astra1: int = Column(Integer, comment='1st dose of AstraZeneca vaccine delivered between 0000 and 2359 on date')
     astra2: int = Column(Integer, comment='2nd dose of AstraZeneca vaccine delivered between 0000 and 2359 on date')
+    cansino: int = Column(Integer, comment='Single-dose CanSino vaccine delivered between 0000 and 2359 on date')
     pending: int = Column(Integer, comment='Doses delivered that are quarantined in VMS (Vaccine Management System)')
 
     def __init__(self, **kwargs) -> None:
@@ -442,6 +450,7 @@ class VaxState(db.Model, object):
     sinovac2: int = Column(Integer, comment='2nd dose of SinoVac vaccine delivered between 0000 and 2359 on date')
     astra1: int = Column(Integer, comment='1st dose of AstraZeneca vaccine delivered between 0000 and 2359 on date')
     astra2: int = Column(Integer, comment='2nd dose of AstraZeneca vaccine delivered between 0000 and 2359 on date')
+    cansino: int = Column(Integer, comment='Single-dose CanSino vaccine delivered between 0000 and 2359 on date')
     pending: int = Column(Integer, comment='Doses delivered that are quarantined in VMS (Vaccine Management System)')
 
     def __init__(self, **kwargs) -> None:

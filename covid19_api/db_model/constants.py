@@ -38,7 +38,8 @@ ROW_VERSION = {
     },
 
     'deaths_state': {
-        hash(frozenset(['date','state','deaths_new'])): 1
+        hash(frozenset(['date','state','deaths_new'])): 1,
+        hash(frozenset(['date','state','deaths_new','deaths_new_dod','deaths_bid','deaths_bid_dod'])): 2,
     },
 
     'hospital': {
@@ -48,7 +49,8 @@ ROW_VERSION = {
 
     'icu': {
         hash(frozenset(['date','state','bed_icu','bed_icu_rep','bed_icu_total','bed_icu_covid','vent','vent_port','icu_covid','icu_pui','icu_noncovid','vent_covid','vent_pui','vent_noncovid'])): 1,
-        hash(frozenset(['date','state','beds_icu','beds_icu_rep','beds_icu_total','beds_icu_covid','vent','vent_port','icu_covid','icu_pui','icu_noncovid','vent_covid','vent_pui','vent_noncovid'])): 2
+        hash(frozenset(['date','state','beds_icu','beds_icu_rep','beds_icu_total','beds_icu_covid','vent','vent_port','icu_covid','icu_pui','icu_noncovid','vent_covid','vent_pui','vent_noncovid'])): 2,
+        hash(frozenset(['date','state','beds_icu','beds_icu_rep','beds_icu_total','beds_icu_covid','vent','vent_port','icu_covid','icu_pui','icu_noncovid','vent_covid','vent_pui','vent_noncovid','vent_used','vent_port_used'])): 3
     },
 
     'pkrc': {
@@ -86,11 +88,13 @@ ROW_VERSION = {
     },
     'vax_malaysia': {
         hash(frozenset(['date', 'dose1_daily', 'dose2_daily', 'total_daily', 'dose1_cumul', 'dose2_cumul', 'total_cumul'])): 1,
-        hash(frozenset(['date', 'daily_partial', 'daily_full', 'daily', 'cumul_partial', 'cumul_full', 'cumul', 'pfizer1', 'pfizer2', 'sinovac1', 'sinovac2', 'astra1', 'astra2', 'pending'])): 2
+        hash(frozenset(['date', 'daily_partial', 'daily_full', 'daily', 'cumul_partial', 'cumul_full', 'cumul', 'pfizer1', 'pfizer2', 'sinovac1', 'sinovac2', 'astra1', 'astra2', 'pending'])): 2,
+        hash(frozenset(['date', 'daily_partial', 'daily_full', 'daily', 'cumul_partial', 'cumul_full', 'cumul', 'pfizer1', 'pfizer2', 'sinovac1', 'sinovac2', 'astra1', 'astra2', 'cansino', 'pending'])): 3
     },
     'vax_state': {
         hash(frozenset(['date', 'state', 'dose1_daily', 'dose2_daily', 'total_daily', 'dose1_cumul', 'dose2_cumul', 'total_cumul'])): 1,
-        hash(frozenset(['date', 'state', 'daily_partial', 'daily_full', 'daily', 'cumul_partial', 'cumul_full', 'cumul', 'pfizer1', 'pfizer2', 'sinovac1', 'sinovac2', 'astra1', 'astra2', 'pending'])): 2
+        hash(frozenset(['date', 'state', 'daily_partial', 'daily_full', 'daily', 'cumul_partial', 'cumul_full', 'cumul', 'pfizer1', 'pfizer2', 'sinovac1', 'sinovac2', 'astra1', 'astra2', 'pending'])): 2,
+        hash(frozenset(['date', 'state', 'daily_partial', 'daily_full', 'daily', 'cumul_partial', 'cumul_full', 'cumul', 'pfizer1', 'pfizer2', 'sinovac1', 'sinovac2', 'astra1', 'astra2', 'cansino', 'pending'])): 2
     }
 }
 
@@ -110,10 +114,12 @@ DATA_CONVERSION_DICT = {
         2: {'date': convert_date, 'deaths_new': int, 'deaths_new_dod': int, 'deaths_bid': int, 'deaths_bid_dod': int}
     },
     'deaths_malaysia': {
-        1: {'date': convert_date, 'deaths_new': int}
+        1: {'date': convert_date, 'deaths_new': int},
+        2: {'date': convert_date, 'deaths_new': int, 'deaths_new_dod': int, 'deaths_bid': int,'deaths_bid_dod': int}
     },
     'deaths_state': {
-        1: {'date': convert_date, 'deaths_new': int}
+        1: {'date': convert_date, 'deaths_new': int},
+        2: {'date': convert_date, 'deaths_new': int, 'deaths_new_dod': int, 'deaths_bid': int, 'deaths_bid_dod': int}
     },
     'hospital': {
         1: {'date': convert_date, 'beds': int, 'beds_noncrit': int, 'admitted_pui': int, 'admitted_covid': int, 'admitted_total': int, 'discharged_pui': int, 'discharged_covid': int, 'discharged_total': int, 'hosp_covid': int, 'hosp_pui': int, 'hosp_noncovid': int},
@@ -121,7 +127,8 @@ DATA_CONVERSION_DICT = {
     },
     'icu': {
         1: {'date': convert_date, 'bed_icu': int, 'bed_icu_rep': int, 'bed_icu_total': int, 'bed_icu_covid': int, 'vent': int, 'vent_port': int, 'icu_covid': int, 'icu_pui': int, 'icu_noncovid': int, 'vent_covid': int, 'vent_pui': int, 'vent_noncovid': int},
-        2: {'date': convert_date, 'beds_icu': int, 'beds_icu_rep': int, 'beds_icu_total': int, 'beds_icu_covid': int, 'vent': int, 'vent_port': int, 'icu_covid': int, 'icu_pui': int, 'icu_noncovid': int, 'vent_covid': int, 'vent_pui': int, 'vent_noncovid': int}
+        2: {'date': convert_date, 'beds_icu': int, 'beds_icu_rep': int, 'beds_icu_total': int, 'beds_icu_covid': int, 'vent': int, 'vent_port': int, 'icu_covid': int, 'icu_pui': int, 'icu_noncovid': int, 'vent_covid': int, 'vent_pui': int, 'vent_noncovid': int},
+        3: {'date': convert_date, 'beds_icu': int, 'beds_icu_rep': int, 'beds_icu_total': int, 'beds_icu_covid': int, 'vent': int, 'vent_port': int, 'icu_covid': int, 'icu_pui': int, 'icu_noncovid': int, 'vent_covid': int, 'vent_pui': int, 'vent_noncovid': int, 'vent_used': int, 'vent_port_used': int}
     },
     'pkrc': {
         1: {'date': convert_date, 'beds': int, 'admitted_pui': int, 'admitted_covid': int,'admitted_total': int, 'discharge_pui': int, 'discharge_covid': int, 'discharge_total': int,'pkrc_covid': int, 'pkrc_pui': int, 'pkrc_noncovid': int}
@@ -153,11 +160,13 @@ DATA_CONVERSION_DICT = {
     },
     'vax_malaysia': {
         1: {'date': convert_date, 'dose1_daily': int, 'dose2_daily': int, 'total_daily': int, 'dose1_cumul': int, 'dose2_cumul': int, 'total_cumul': int},
-        2: {'date': convert_date, 'daily_partial': int, 'daily_full': int, 'daily': int, 'cumul_partial': int, 'cumul_full': int, 'cumul': int, 'pfizer1': int, 'pfizer2': int, 'sinovac1': int, 'sinovac2': int, 'astra1': int, 'astra2': int, 'pending': int}
+        2: {'date': convert_date, 'daily_partial': int, 'daily_full': int, 'daily': int, 'cumul_partial': int, 'cumul_full': int, 'cumul': int, 'pfizer1': int, 'pfizer2': int, 'sinovac1': int, 'sinovac2': int, 'astra1': int, 'astra2': int, 'pending': int},
+        3: {'date': convert_date, 'daily_partial': int, 'daily_full': int, 'daily': int, 'cumul_partial': int, 'cumul_full': int, 'cumul': int, 'pfizer1': int, 'pfizer2': int, 'sinovac1': int, 'sinovac2': int, 'astra1': int, 'astra2': int, 'cansino': int, 'pending': int}
     },
     'vax_state': {
         1: {'date': convert_date, 'dose1_daily': int, 'dose2_daily': int, 'total_daily': int, 'dose1_cumul': int, 'dose2_cumul': int, 'total_cumul': int},
-        2: {'date': convert_date, 'daily_partial': int, 'daily_full': int, 'daily': int, 'cumul_partial': int, 'cumul_full': int, 'cumul': int, 'pfizer1': int, 'pfizer2': int, 'sinovac1': int, 'sinovac2': int, 'astra1': int, 'astra2': int, 'pending': int}
+        2: {'date': convert_date, 'daily_partial': int, 'daily_full': int, 'daily': int, 'cumul_partial': int, 'cumul_full': int, 'cumul': int, 'pfizer1': int, 'pfizer2': int, 'sinovac1': int, 'sinovac2': int, 'astra1': int, 'astra2': int, 'pending': int},
+        3: {'date': convert_date, 'daily_partial': int, 'daily_full': int, 'daily': int, 'cumul_partial': int, 'cumul_full': int, 'cumul': int, 'pfizer1': int, 'pfizer2': int, 'sinovac1': int, 'sinovac2': int, 'astra1': int, 'astra2': int, 'cansino': int, 'pending': int}
     }
 }
 
@@ -179,7 +188,7 @@ SUPPORTED_CSV_DATA = {
     ],
 
     'deaths_state': [
-        hash_column_data(['date','state','deaths_new'])
+        hash_column_data(['date','state','deaths_new']), hash_column_data(['date','state','deaths_new','deaths_new_dod','deaths_bid','deaths_bid_dod'])
     ],
 
     'hospital': [
@@ -189,7 +198,8 @@ SUPPORTED_CSV_DATA = {
 
     'icu': [
         hash_column_data(['date','state','bed_icu','bed_icu_rep','bed_icu_total','bed_icu_covid','vent','vent_port','icu_covid','icu_pui','icu_noncovid','vent_covid','vent_pui','vent_noncovid']),
-        hash_column_data(['date','state','beds_icu','beds_icu_rep','beds_icu_total','beds_icu_covid','vent','vent_port','icu_covid','icu_pui','icu_noncovid','vent_covid','vent_pui','vent_noncovid'])
+        hash_column_data(['date','state','beds_icu','beds_icu_rep','beds_icu_total','beds_icu_covid','vent','vent_port','icu_covid','icu_pui','icu_noncovid','vent_covid','vent_pui','vent_noncovid']),
+        hash_column_data(['date','state','beds_icu','beds_icu_rep','beds_icu_total','beds_icu_covid','vent','vent_port','icu_covid','icu_pui','icu_noncovid','vent_covid','vent_pui','vent_noncovid','vent_used','vent_port_used']),
     ],
 
     'pkrc': [
@@ -227,11 +237,13 @@ SUPPORTED_CSV_DATA = {
     ],
     'vax_malaysia': [
         hash_column_data(['date', 'dose1_daily', 'dose2_daily', 'total_daily', 'dose1_cumul', 'dose2_cumul', 'total_cumul']),
-        hash_column_data(['date', 'daily_partial', 'daily_full', 'daily', 'cumul_partial', 'cumul_full', 'cumul', 'pfizer1', 'pfizer2', 'sinovac1', 'sinovac2', 'astra1', 'astra2', 'pending'])
+        hash_column_data(['date', 'daily_partial', 'daily_full', 'daily', 'cumul_partial', 'cumul_full', 'cumul', 'pfizer1', 'pfizer2', 'sinovac1', 'sinovac2', 'astra1', 'astra2', 'pending']),
+        hash_column_data(['date', 'daily_partial', 'daily_full', 'daily', 'cumul_partial', 'cumul_full', 'cumul', 'pfizer1', 'pfizer2', 'sinovac1', 'sinovac2', 'astra1', 'astra2', 'cansino', 'pending'])
     ],
     'vax_state': [
         hash_column_data(['date', 'state', 'dose1_daily', 'dose2_daily', 'total_daily', 'dose1_cumul', 'dose2_cumul', 'total_cumul']),
-        hash_column_data(['date', 'state', 'daily_partial', 'daily_full', 'daily', 'cumul_partial', 'cumul_full', 'cumul', 'pfizer1', 'pfizer2', 'sinovac1', 'sinovac2', 'astra1', 'astra2', 'pending'])
+        hash_column_data(['date', 'state', 'daily_partial', 'daily_full', 'daily', 'cumul_partial', 'cumul_full', 'cumul', 'pfizer1', 'pfizer2', 'sinovac1', 'sinovac2', 'astra1', 'astra2', 'pending']),
+        hash_column_data(['date', 'state', 'daily_partial', 'daily_full', 'daily', 'cumul_partial', 'cumul_full', 'cumul', 'pfizer1', 'pfizer2', 'sinovac1', 'sinovac2', 'astra1', 'astra2', 'cansino', 'pending'])
     ],
     'linelist_deaths': [
         hash_column_data(['date', 'date_positive', 'date_dose1', 'date_dose2', 'vaxtype', 'state', 'age', 'male', 'bid', 'malaysian', 'comorb'])

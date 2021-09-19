@@ -10,7 +10,9 @@ cases_malaysia = api.model('cases_malaysia', {
     'row_id': fields.Integer(title='Row ID', description='ID of the row', example='1'),
     'row_version': fields.Integer(title='Row version', description='The version of the row.', example='1'),
     'date': fields.Date(title='Date', example='2021-01-01'),
-    'cases_new': fields.Integer(title='New cases'),
+    'cases_new': fields.Integer(title='New local cases'),
+    'cases_import': fields.Integer(title='New import cases'),
+    'cases_recovered': fields.Integer(title='Recovered cases'),
     'cluster_import': fields.Integer(title='Import new cases (not available with row_version=1)'),
     'cluster_religious': fields.Integer(title='Religious new cases (not available with row_version=1)'),
     'cluster_community': fields.Integer(title='Community new cases (not available with row_version=1)'),
@@ -25,7 +27,9 @@ cases_state = api.model('cases_state', {
     'row_version': fields.Integer(title='Row version', description='The version of the row.'),
     'date': fields.Date(title='Date'),
     'state': fields.String(title='State name'),
-    'cases_new': fields.Integer(title='New cases')
+    'cases_import': fields.Integer(title='New import cases'),
+    'cases_new': fields.Integer(title='New local cases'),
+    'cases_recovered': fields.Integer(title='Recovered cases'),
 })
 
 clusters = api.model('clusters', {
@@ -51,7 +55,10 @@ deaths_malaysia = api.model('deaths_malaysia', {
     'row_id': fields.Integer(title='Deaths ID'),
     'row_version': fields.Integer(title='Row version'),
     'date': fields.Date(title='Reported date'),
-    'deaths_new': fields.Integer(title='New deaths for the reported date')
+    'deaths_new': fields.Integer(title='New deaths for the reported date'),
+    'deaths_new_dod': fields.Integer(title='New deaths for the reported date'),
+    'deaths_bid': fields.Integer(title='New deaths for the reported date'),
+    'deaths_bid_dod': fields.Integer(title='New deaths for the reported date')
 })
 
 deaths_state = api.model('deaths_state', {
@@ -59,7 +66,10 @@ deaths_state = api.model('deaths_state', {
     'row_version': fields.Integer(title='Row version'),
     'date': fields.Date(title='Reported date'),
     'state': fields.String(title='State name'),
-    'deaths_new': fields.Integer(title='New deaths for the reported date')
+    'deaths_new': fields.Integer(title='New deaths for the reported date'),
+    'deaths_new_dod': fields.Integer(title='New deaths for the reported date'),
+    'deaths_bid': fields.Integer(title='New deaths for the reported date'),
+    'deaths_bid_dod': fields.Integer(title='New deaths for the reported date')
 })
 
 hospital = api.model('hospital', {
@@ -97,7 +107,9 @@ icu = api.model('icu', {
     'icu_noncovid': fields.Integer(title='Total number of non-COVID individuals under ICU care'),
     'vent_covid': fields.Integer(title='Total number of COVID individuals that require ventilator'),
     'vent_pui': fields.Integer(title='Total number of PUI individuals that require ventilator'),
-    'vent_noncovid': fields.Integer(title='Total number of non-COVID individuals that require ventilator')
+    'vent_noncovid': fields.Integer(title='Total number of non-COVID individuals that require ventilator'),
+    'vent_used': fields.Integer(title='Total ventilators used'),
+    'vent_port_used': fields.Integer(title='Total portable ventilators used'),
 })
 
 pkrc = api.model('pkrc', {
