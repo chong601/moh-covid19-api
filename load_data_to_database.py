@@ -16,6 +16,8 @@ COVID19_FILE_LIST = {
         {'filename': 'icu.csv', 'model': ICUByState, 'primary_key': ['date', 'state']},
         {'filename': 'pkrc.csv', 'model': PKRCByState, 'primary_key': ['date', 'state']},
         {'filename': 'tests_malaysia.csv', 'model': TestsMalaysia, 'primary_key': ['date']},
+        {'filename': 'tests_state.csv', 'model': TestsState, 'primary_key': ['date', 'state']},
+        {'filename': os.path.join('linelist','linelist_deaths.csv'), 'model': LineListDeaths, 'primary_key': ['date', 'state']},
     ],
     'mysejahtera': [
         {'filename': 'checkin_malaysia_time.csv', 'model': CheckinMalaysiaTime, 'primary_key': ['date']},
@@ -25,6 +27,9 @@ COVID19_FILE_LIST = {
     ],
     'static': [
         {'filename': 'population.csv', 'model': Population, 'primary_key': ['idxs']},
+    ],
+    'vaccination': [
+        {'filename': 'aefi.csv', 'model': AEFI, 'primary_key': []}
     ]
 }
 
@@ -112,15 +117,16 @@ for module_name, module_details in AVAILABLE_MODULES.items():
             data_array = []
             for index, data in csv_row_data:
                 row_with_data = [x.strip() for x, y in data.items() if y.strip()]
-                version_number = ROW_VERSION[repository_name][hash(frozenset(row_with_data))]
+                version_number = ROW_VERSION[repository_name][hash_column_data(row_with_data)]
                 temp_row = {k.strip(): v.strip() for k, v in data.items() if k.strip() in row_with_data}
                 temp_row['row_id'] = index
                 temp_row['row_version'] = version_number
-                conv_func: dict = DATA_CONVERSION_DICT[repository_name][temp_row['row_version']]
                 row = list(temp_row.keys())
                 for key in row:
-                    if key in conv_func:
-                        temp_row[key] = conv_func.get(key)(temp_row[key])
+                    if repository_name in DATA_CONVERSION_DICT:
+                        conv_func = DATA_CONVERSION_DICT[repository_name][temp_row['row_version']]
+                        if key in conv_func:
+                            temp_row[key] = conv_func.get(key)(temp_row[key])
                 if REMAP_DATA.get(repository_name, None) is not None:
                     for key in row:
                         if key in REMAP_DATA[repository_name]:

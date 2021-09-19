@@ -12,7 +12,8 @@ population = api.model('population', {
     'idxs': fields.Integer(title='Index number'),
     'pop': fields.Integer(title='Total state population'),
     'pop_18': fields.Integer(title='Total state population ages >= 18'),
-    'pop_60': fields.Integer(title='Total state population ages >= 60')
+    'pop_60': fields.Integer(title='Total state population ages >= 60'),
+    'pop_12': fields.Integer(title='Total state population ages >= 12')
 })
 
 pagination_parser = api.parser()

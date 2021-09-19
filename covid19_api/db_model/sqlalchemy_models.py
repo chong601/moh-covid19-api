@@ -208,6 +208,72 @@ class TestsMalaysia(db.Model, object):
 
 
 @dataclass
+class TestsState(db.Model, object):
+    __tablename__ = 'tests_state'
+
+    row_id: int = Column(Integer, primary_key=True, autoincrement=False, comment='Tests UUID')
+    row_version: int = Column(Integer, comment='Row version')
+    date: PyDate = Column(SQLDate, comment='Reported date')
+    state: str = Column(Text, comment='State name')
+    rtk_ag: int = Column(Integer, comment='Total RTK-Ag tests performed')
+    pcr: int = Column(Integer, comment='Total RT-PCR tests performed')
+
+    def __init__(self, **kwargs) -> None:
+        for k, v in kwargs.items():
+            if k == 'rtk-ag':
+                setattr(self, 'rtk_ag', v)
+                continue
+            setattr(self, k, v)
+
+
+@dataclass
+class LineListDeaths(db.Model, object):
+    __tablename__ = 'linelist_deaths'
+
+    row_id: int = Column(Integer, primary_key=True, autoincrement=False, comment='Case ID')
+    row_version: int = Column(Integer, comment="Row version")
+    date: PyDate = Column(SQLDate, comment='Case date')
+    date_positive: PyDate = Column(SQLDate, comment='Case date')
+    date_dose1: PyDate = Column(SQLDate, comment='Case date', nullable=True)
+    date_dose2: PyDate = Column(SQLDate, comment='Case date', nullable=True)
+    vaxtype: str = Column(Text, comment='Vaccine name', nullable=True)
+    state: str = Column(Text, comment='State name')
+    age: int = Column(Integer, comment='Age')
+    male: int = Column(Integer, comment='Gender (male if 1)')
+    bid: int = Column(Integer, comment='Brought in dead')
+    malaysian: int = Column(Integer, comment='Citizenship (Malaysian if 1)')
+    comorb: int = Column(Integer, comment='With comorbidities?')
+    
+
+    def __init__(self, **kwargs) -> None:
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+
+@dataclass
+class AEFI(db.Model, object):
+    __tablename__ = 'aefi'
+
+    row_id: int = Column(Integer, primary_key=True, autoincrement=False, comment='Case ID')
+    row_version: int = Column(Integer, comment="Row version")
+    date: PyDate = Column(SQLDate, comment='Case date')
+    vaxtype: str = Column(Text, comment='Vaccine name', nullable=True)
+    reports_mysj: int = Column(Integer, comment='Number of AEFI reports through MySejahtera')
+    reports_npra: int = Column(Integer, comment='Number of AEFI reports through NPRA website')
+    nonserious: int = Column(Integer, comment='Number of non-serious AEFI reported')
+    serious: int = Column(Integer, comment='Number of serious AEFI reported')
+    suspected_anaphylaxis: int = Column(Integer, comment='Number of suspected anaphylaxis reported')
+    acute_facial_paralysis: int = Column(Integer, comment='Number of acute facial paralysis reported')
+    venous_thromboembolism: int = Column(Integer, comment='Number of venous thromboembolism reported')
+    myo_pericarditis: int = Column(Integer, comment='Number of myopericarditis reported')
+    
+
+    def __init__(self, **kwargs) -> None:
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+
+@dataclass
 class CheckinMalaysiaTime(db.Model, object):
     __tablename__ = 'checkin_malaysia_time'
 
@@ -335,6 +401,7 @@ class Population(db.Model, object):
     pop: int = Column(Integer, comment='Total state population')
     pop_18: int = Column(Integer, comment='Total state population ages >= 18')
     pop_60: int = Column(Integer, comment='Total state population ages >= 60')
+    pop_12: int = Column(Integer, comment='Total state population ages >= 12')
 
     def __init__(self, **kwargs) -> None:
         for k, v in kwargs.items():
@@ -416,6 +483,8 @@ class VaxMalaysia(db.Model, object):
     cumul_partial: int = Column(Integer, comment='Sum of cumulative partial doses delivered until row date')
     cumul_full: int = Column(Integer, comment='Sum of cumulative full doses delivered until row date')
     cumul: int = Column(Integer, comment='Total cumulative doses delivered until row date')
+    cumul_partial_child: int = Column(Integer, comment='Sum of cumulative partial doses delivered for children until row date')
+    cumul_full_child: int = Column(Integer, comment='Sum of cumulative full doses delivered for childred until row date')
     pfizer1: int = Column(Integer, comment='1st dose of PFizer vaccine delivered between 0000 and 2359 on date')
     pfizer2: int = Column(Integer, comment='2nd dose of PFizer vaccine delivered between 0000 and 2359 on date')
     sinovac1: int = Column(Integer, comment='1st dose of SinoVac vaccine delivered between 0000 and 2359 on date')
@@ -444,6 +513,8 @@ class VaxState(db.Model, object):
     cumul_partial: int = Column(Integer, comment='Sum of cumulative partial doses delivered until row date')
     cumul_full: int = Column(Integer, comment='Sum of cumulative full doses delivered until row date')
     cumul: int = Column(Integer, comment='Total cumulative doses delivered until row date')
+    cumul_partial_child: int = Column(Integer, comment='Sum of cumulative partial doses delivered for children until row date')
+    cumul_full_child: int = Column(Integer, comment='Sum of cumulative full doses delivered for childred until row date')
     pfizer1: int = Column(Integer, comment='1st dose of PFizer vaccine delivered between 0000 and 2359 on date')
     pfizer2: int = Column(Integer, comment='2nd dose of PFizer vaccine delivered between 0000 and 2359 on date')
     sinovac1: int = Column(Integer, comment='1st dose of SinoVac vaccine delivered between 0000 and 2359 on date')
