@@ -13,7 +13,7 @@ def check_csv_file_support(filename: str, repository_name: str):
         return None
 
 
-def parse_csv(filename: str, data_type: str):
+def parse_csv(filename: str):
     with open(filename, newline='', encoding='utf8') as file:
         csv_data = csv.DictReader(file)
         for index, csv_row in enumerate(csv_data, 1):

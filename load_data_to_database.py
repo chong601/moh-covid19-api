@@ -108,7 +108,7 @@ for module_name, module_details in AVAILABLE_MODULES.items():
 
             print(f'Start parsing {category_name} from CSV file {filename}')
 
-            csv_row_data: dict = parse_csv(real_file_path, repository_name)
+            csv_row_data: dict = parse_csv(real_file_path)
             data_array = []
             for index, data in csv_row_data:
                 row_with_data = [x.strip() for x, y in data.items() if y.strip()]
