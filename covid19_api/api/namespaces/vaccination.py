@@ -117,7 +117,7 @@ class VaxStateWithPagination(Resource):
         # We don't use size against the final result, instead on the number of dates
         size = args.get('size') or 7
 
-        date_subquery = db.session.query(VaxState.date).group_by(VaxState.date).order_by(VaxState.date)
+        date_subquery = db.session.query(VaxState.date).group_by(VaxState.date)
         query = db.session.query(VaxState)
 
         if not (args['page'] or args['size']):
