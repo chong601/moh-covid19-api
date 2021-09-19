@@ -1,7 +1,7 @@
 from flask_restx import Namespace, Resource, fields, abort
 from flask_sqlalchemy import Pagination
 from sqlalchemy.sql.expression import or_
-from covid19_api.db_model.sqlalchemy_models import CasesMalaysia, CasesState, Clusters, DeathsMalaysia, DeathsState, HospitalByState, ICUByState, PKRCByState, TestsMalaysia
+from covid19_api.db_model.sqlalchemy_models import CasesMalaysia, CasesState, Clusters, DeathsMalaysia, DeathsState, HospitalByState, ICUByState, PKRCByState, TestsMalaysia, TestsState, LineListDeaths
 from covid19_api.api import db
 
 api = Namespace('epidemic', 'Epidemic data')
@@ -121,9 +121,9 @@ pkrc = api.model('pkrc', {
     'admitted_pui': fields.Integer(title='Total admitted persons under investigation'),
     'admitted_covid': fields.Integer(title='Total admitted persons with COVID-19'),
     'admitted_total': fields.Integer(title='Total admissions'),
-    'discharged_pui': fields.Integer(title='Total discharged persons under investigation'),
-    'discharged_covid': fields.Integer(title='Total discharged persons with COVID-19'),
-    'discharged_total': fields.Integer(title='Total discharges'),
+    'discharge_pui': fields.Integer(title='Total discharged persons under investigation'),
+    'discharge_covid': fields.Integer(title='Total discharged persons with COVID-19'),
+    'discharge_total': fields.Integer(title='Total discharges'),
     'pkrc_pui': fields.Integer(title='Total hospitalised persons under investigation'),
     'pkrc_covid': fields.Integer(title='Total hospitalised COVID-19 patients'),
     'pkrc_noncovid': fields.Integer(title='Total non-COVID patients')
@@ -135,6 +135,32 @@ tests_malaysia = api.model('tests_malaysia', {
     'date': fields.Date(title='Reported date'),
     'rtk_ag': fields.Integer(title='Total RTK-Ag tests performed'),
     'pcr': fields.Integer(title='Total RT-PCR tests performed')
+})
+
+tests_state = api.model('tests_malaysia', {
+    'row_id': fields.Integer(title='Deaths ID'),
+    'row_version': fields.Integer(title='Row version'),
+    'date': fields.Date(title='Reported date'),
+    'state': fields.String(title='State name'),
+    'rtk_ag': fields.Integer(title='Total RTK-Ag tests performed'),
+    'pcr': fields.Integer(title='Total RT-PCR tests performed')
+})
+
+linelist_deaths = api.model('linelist_deaths', {
+    'row_id': fields.Integer(title='Deaths ID'),
+    'row_version': fields.Integer(title='Row version'),
+    'date': fields.Date(title='Deceased date'),
+    'date_positive': fields.Date(title='Tested positive date'),
+    'date_dose1': fields.Date(title='First dose date'),
+    'date_dose2': fields.Date(title='Second dose date'),
+    'vaxtype': fields.String(title='Vaccine name'),
+    'state': fields.String(title='State name'),
+    'age': fields.Integer(title='Deceased age'),
+    # Probably wanna change this to a better keyword, like "gender" and use full name or shortened form
+    'male': fields.Integer(title='Deceased gender (1 for male, 0 for female'),
+    'bid': fields.Integer(title='Is the deceased brought-in-dead?'),
+    'malaysian': fields.Integer(title='Deceased nationality (1 for Malaysian citizen, 0 otherwise)'),
+    'comorb': fields.Integer(title='Whether the deceased has any comorbodities?'),
 })
 
 pagination_parser = api.parser()
@@ -1154,3 +1180,135 @@ class TestsMalaysiaByDate(Resource):
             result = query.first()
             return result
         abort(404, error=f"Date '{date}' is not found in database.")
+
+
+@api.route('/tests_state')
+class TestsStateWithPagination(Resource):
+
+    @api.expect(pagination_parser)
+    @api.marshal_with(tests_state, skip_none=True)
+    @api.doc(responses={404: 'Not Found'})
+    def get(self):
+        """
+        Returns COVID-19 testing rate on per-state basis with pagination support.
+
+        Defaults to get COVID-19 testing rate for the last 7 days if page and size are not defined, in ascending date order.
+
+        Size parameter is optional and defaults to 10 items.
+
+        Note: Size parameter only applies to number of days, not number of items!
+        """
+        args: dict = pagination_parser.parse_args()
+        page = args.get('page') or 1
+        # We don't use size against the final result, instead on the number of dates
+        size = args.get('size') or 7
+
+        date_subquery = db.session.query(TestsState.date).group_by(TestsState.date)
+        query = db.session.query(TestsState)
+
+        if not (args['page'] or args['size']):
+            date_subquery = date_subquery.order_by(TestsState.date.desc()).limit(7)
+            query = query.filter(TestsState.date.in_(date_subquery)).order_by(TestsState.date, TestsState.state)
+            return query.all()
+
+        # Handle date bullshit first, then deal with actual data
+
+        # Get dates based on the pagination values
+        date_result: Pagination = date_subquery.paginate(page, size, error_out=False)
+        # Get all dates returned by the pagination
+        dates = [date[0] for date in date_result.items]
+
+        # Future project: implement pagination logic and expose it to end user
+        attr = {a: getattr(date_result, a) for a in dir(date_result) if not a.startswith('__') and not callable(getattr(date_result, a))}
+
+        if 'query' in attr:
+            compile = attr['query'].statement.compile()
+            attr.update({'query_string': compile.string})
+            attr.update({'query_param': compile.params})
+            del attr['query']
+
+        # Query the database with the rows selected from pagination
+        # Think of this as a subquery-ish method, except that the query is done separately like:
+        # 
+        # pagination_result = select date from vax_state group by date order by date offset (SELECT (page_number - 1) * size) limit size;
+        # query = select * from vax_state where date in (pagination.result);
+        query = query.filter(TestsState.date.in_(dates)).order_by(TestsState.date, TestsState.state)
+        result = query.all()
+
+        if result:
+            return result
+        abort(404, error=f"Invalid page number '{page}'. Valid page numbers are between 1 to {date_result.pages} for size of {date_result.per_page} item(s)")
+
+
+@api.route('/tests_state/<string:state>')
+class TestsStateByDate(Resource):
+
+    @api.expect(pagination_parser)
+    @api.marshal_with(tests_state, as_list=True, skip_none=True)
+    @api.doc(responses={404: 'Not Found'})
+    def get(self, state):
+        """
+        Returns COVID-19 testing rate for a state with pagination support.
+
+        State name is case-insensitive.
+
+        Defaults to get COVID-19 testing rate for the last 7 days if page and size are not defined, in ascending date order.
+
+        Size parameter is optional and defaults to 10 items.
+
+        Note: Size parameter only applies to number of days, not number of items!
+        """
+        args: dict = pagination_parser.parse_args()
+        page = args.get('page') or 1
+        size = args.get('size') or 7
+
+        date_subquery = db.session.query(TestsState.date).group_by(TestsState.date)
+        query = db.session.query(TestsState)
+        state_count = db.session.query(TestsState.state).distinct(TestsState.state).count()
+
+        if not (args['page'] or args['size']):
+            date_subquery = date_subquery.order_by(TestsState.date.desc()).limit(size)
+
+        if state != 'all':
+            state_exists = db.session.query(db.session.query(TestsState.state).filter(TestsState.state.ilike(f'%{state}')).exists()).scalar()
+            if state_exists:
+                query = query.filter(TestsState.state.ilike(f'%{state}'), TestsState.date.in_(date_subquery))
+            else:
+                abort(404, f"State name '{state}' not found in database")
+        else:
+            size = size * state_count
+            query = query.filter(TestsState.date.in_(date_subquery))
+
+        result:Pagination = query.order_by(TestsState.date).paginate(page, size, error_out=False)
+        if result.items:
+            return result.items
+
+
+@api.route('/tests_state/<string:state>/<string:date>')
+class TestsStateByStateWithPagination(Resource):
+
+    @api.marshal_with(tests_state, as_list=True, skip_none=True)
+    @api.doc(responses={404: 'Not Found'})
+    def get(self, state, date):
+        """
+        Returns COVID-19 testing rate for a state on the specified date.
+
+        State name is case-insensitive.
+
+        Date format follows ISO-8601 date format (YYYY-MM-DD eg. 2021-08-03).
+        """
+        query = db.session.query(TestsState)
+
+        if state != 'all':
+            state_exists = db.session.query(db.session.query(TestsState.state).filter(TestsState.state.ilike(f'%{state}')).exists()).scalar()
+            if state_exists:
+                query = query.filter(TestsState.state.ilike(f'%{state}'), TestsState.date == date)
+            else:
+                abort(404, f"State name '{state}' not found in database")
+        else:
+            query = query.filter(TestsState.date == date)
+
+        result = query.all()
+        if result:
+            return result
+        abort(404, error=f"State '{state}' with date '{date}' is not found in database.")
