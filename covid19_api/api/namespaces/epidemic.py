@@ -58,7 +58,10 @@ deaths_malaysia = api.model('deaths_malaysia', {
     'deaths_new': fields.Integer(title='New deaths for the reported date'),
     'deaths_new_dod': fields.Integer(title='New deaths for the reported date'),
     'deaths_bid': fields.Integer(title='New deaths for the reported date'),
-    'deaths_bid_dod': fields.Integer(title='New deaths for the reported date')
+    'deaths_bid_dod': fields.Integer(title='New deaths for the reported date'),
+    'deaths_pvax': fields.Integer(title='New deaths with partial vaccination for the reported date'),
+    'deaths_fvax': fields.Integer(title='New deaths with full vaccination for the reported date'),
+    
 })
 
 deaths_state = api.model('deaths_state', {
@@ -69,7 +72,9 @@ deaths_state = api.model('deaths_state', {
     'deaths_new': fields.Integer(title='New deaths for the reported date'),
     'deaths_new_dod': fields.Integer(title='New deaths for the reported date'),
     'deaths_bid': fields.Integer(title='New deaths for the reported date'),
-    'deaths_bid_dod': fields.Integer(title='New deaths for the reported date')
+    'deaths_bid_dod': fields.Integer(title='New deaths for the reported date'),
+    'deaths_pvax': fields.Integer(title='New deaths with partial vaccination for the reported date'),
+    'deaths_fvax': fields.Integer(title='New deaths with full vaccination for the reported date'),
 })
 
 hospital = api.model('hospital', {
