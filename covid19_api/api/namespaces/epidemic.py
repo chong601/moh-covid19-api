@@ -1317,3 +1317,180 @@ class TestsStateByStateWithPagination(Resource):
         if result:
             return result
         abort(404, error=f"State '{state}' with date '{date}' is not found in database.")
+
+
+@api.route('/linelist_deaths')
+class LineListDeathsWithPagination(Resource):
+
+    @api.expect(pagination_parser)
+    @api.marshal_with(linelist_deaths, as_list=True, skip_none=True)
+    @api.doc(responses={404: 'Not Found'})
+    def get(self):
+        """
+        Returns PKRC data on per-state basis with pagination support.
+
+        Defaults to PKRC data from all states for the last 7 days if page and size are not defined, in ascending date order.
+
+        Size parameter is optional and defaults to 10 items.
+
+        Note: Size parameter only applies to number of days, not number of items!
+        """
+        args: dict = pagination_parser.parse_args()
+        page = args.get('page') or 1
+        # We don't use size against the final result, instead on the number of dates
+        size = args.get('size') or 7
+
+        date_subquery = db.session.query(LineListDeaths.date).group_by(LineListDeaths.date)
+        query = db.session.query(LineListDeaths)
+
+        if not (args['page'] or args['size']):
+            date_subquery = date_subquery.order_by(LineListDeaths.date.desc()).limit(7)
+            query = query.filter(LineListDeaths.date.in_(date_subquery)).order_by(LineListDeaths.date, LineListDeaths.state)
+            return query.all()
+
+        # Ugh. Apparently Putrajaya didn't have hospital data till 2021-05-11, so we need to do 
+        # some crappy dance around this to make it "work"
+
+        # Get dates based on the pagination values
+        date_result: Pagination = date_subquery.paginate(page, size, error_out=False)
+        # Get all dates returned by the pagination
+        dates = [date[0] for date in date_result.items]
+
+        # Future project: implement pagination logic and expose it to end user
+        attr = {a: getattr(date_result, a) for a in dir(date_result) if not a.startswith('__') and not callable(getattr(date_result, a))}
+
+        if 'query' in attr:
+            compile = attr['query'].statement.compile()
+            attr.update({'query_string': compile.string})
+            attr.update({'query_param': compile.params})
+            del attr['query']
+
+        # Query the database with the rows selected from pagination
+        # Think of this as a subquery-ish method, except that the query is done separately like:
+        # 
+        # pagination_result = select date from hospital_by_state group by date order by date offset (SELECT (page_number - 1) * size) limit size;
+        # query = select * from hospital_by_state where date in (pagination.result);
+        query = query.filter(LineListDeaths.date.in_(dates)).order_by(LineListDeaths.date, LineListDeaths.state)
+        result: Pagination = query.all()
+
+        if result:
+            return result
+        abort(404, error=f"Invalid page number '{page}'. Valid page numbers are between 1 to {date_result.pages} for size of {date_result.per_page} item(s)")
+
+
+@api.route('/linelist_deaths/partial')
+class LineListDeathsWithPartialVaccineWithPagination(Resource):
+
+    @api.expect(pagination_parser)
+    @api.marshal_with(linelist_deaths, as_list=True, skip_none=True)
+    @api.doc(responses={404: 'Not Found'})
+    def get(self):
+        """
+        Returns PKRC data on per-state basis with pagination support.
+
+        Defaults to PKRC data from all states for the last 7 days if page and size are not defined, in ascending date order.
+
+        Size parameter is optional and defaults to 10 items.
+LineListDeaths.date_dose1 != None, LineListDeaths.date_dose2 != None
+        Note: Size parameter only applies to number of days, not number of items!
+        """
+        args: dict = pagination_parser.parse_args()
+        page = args.get('page') or 1
+        # We don't use size against the final result, instead on the number of dates
+        size = args.get('size') or 7
+
+        date_subquery = db.session.query(LineListDeaths.date).filter(LineListDeaths.date_dose1 != None, LineListDeaths.date_dose2 == None).group_by(LineListDeaths.date)
+        query = db.session.query(LineListDeaths)
+
+        if not (args['page'] or args['size']):
+            date_subquery = date_subquery.order_by(LineListDeaths.date.desc()).limit(7)
+            query = query.filter(LineListDeaths.date.in_(date_subquery), LineListDeaths.date_dose1 != None, LineListDeaths.date_dose2 == None).order_by(LineListDeaths.date, LineListDeaths.state)
+            return query.all()
+
+        # Ugh. Apparently Putrajaya didn't have hospital data till 2021-05-11, so we need to do 
+        # some crappy dance around this to make it "work"
+
+        # Get dates based on the pagination values
+        date_result: Pagination = date_subquery.paginate(page, size, error_out=False)
+        # Get all dates returned by the pagination
+        dates = [date[0] for date in date_result.items]
+
+        # Future project: implement pagination logic and expose it to end user
+        attr = {a: getattr(date_result, a) for a in dir(date_result) if not a.startswith('__') and not callable(getattr(date_result, a))}
+
+        if 'query' in attr:
+            compile = attr['query'].statement.compile()
+            attr.update({'query_string': compile.string})
+            attr.update({'query_param': compile.params})
+            del attr['query']
+
+        # Query the database with the rows selected from pagination
+        # Think of this as a subquery-ish method, except that the query is done separately like:
+        # 
+        # pagination_result = select date from hospital_by_state group by date order by date offset (SELECT (page_number - 1) * size) limit size;
+        # query = select * from hospital_by_state where date in (pagination.result);
+        query = query.filter(LineListDeaths.date.in_(dates), LineListDeaths.date_dose1 != None, LineListDeaths.date_dose2 == None).order_by(LineListDeaths.date, LineListDeaths.state)
+        result: Pagination = query.all()
+
+        if result:
+            return result
+        abort(404, error=f"Invalid page number '{page}'. Valid page numbers are between 1 to {date_result.pages} for size of {date_result.per_page} item(s)")
+
+
+@api.route('/linelist_deaths/full')
+class LineListDeathsWithFullVaccineWithPagination(Resource):
+
+    @api.expect(pagination_parser)
+    @api.marshal_with(linelist_deaths, as_list=True, skip_none=True)
+    @api.doc(responses={404: 'Not Found'})
+    def get(self):
+        """
+        Returns PKRC data on per-state basis with pagination support.
+
+        Defaults to PKRC data from all states for the last 7 days if page and size are not defined, in ascending date order.
+
+        Size parameter is optional and defaults to 10 items.
+
+        Note: Size parameter only applies to number of days, not number of items!
+        """
+        args: dict = pagination_parser.parse_args()
+        page = args.get('page') or 1
+        # We don't use size against the final result, instead on the number of dates
+        size = args.get('size') or 7
+
+        date_subquery = db.session.query(LineListDeaths.date).filter(LineListDeaths.date_dose1 != None, LineListDeaths.date_dose2 != None).group_by(LineListDeaths.date).order_by(LineListDeaths.date)
+        query = db.session.query(LineListDeaths)
+
+        if not (args['page'] or args['size']):
+            date_subquery = date_subquery.order_by(LineListDeaths.date.desc()).limit(7)
+            query = query.filter(LineListDeaths.date.in_(date_subquery), LineListDeaths.date_dose1 != None, LineListDeaths.date_dose2 != None).order_by(LineListDeaths.date, LineListDeaths.state)
+            return query.all()
+
+        # Ugh. Apparently Putrajaya didn't have hospital data till 2021-05-11, so we need to do 
+        # some crappy dance around this to make it "work"
+
+        # Get dates based on the pagination values
+        date_result: Pagination = date_subquery.paginate(page, size, error_out=False)
+        # Get all dates returned by the pagination
+        dates = [date[0] for date in date_result.items]
+
+        # Future project: implement pagination logic and expose it to end user
+        attr = {a: getattr(date_result, a) for a in dir(date_result) if not a.startswith('__') and not callable(getattr(date_result, a))}
+
+        if 'query' in attr:
+            compile = attr['query'].statement.compile()
+            attr.update({'query_string': compile.string})
+            attr.update({'query_param': compile.params})
+            del attr['query']
+
+        # Query the database with the rows selected from pagination
+        # Think of this as a subquery-ish method, except that the query is done separately like:
+        # 
+        # pagination_result = select date from hospital_by_state group by date order by date offset (SELECT (page_number - 1) * size) limit size;
+        # query = select * from hospital_by_state where date in (pagination.result);
+        query = query.filter(LineListDeaths.date.in_(dates), LineListDeaths.date_dose1 != None, LineListDeaths.date_dose2 != None).order_by(LineListDeaths.date, LineListDeaths.state)
+        result: Pagination = query.all()
+
+        if result:
+            return result
+        abort(404, error=f"Invalid page number '{page}'. Valid page numbers are between 1 to {date_result.pages} for size of {date_result.per_page} item(s)")
