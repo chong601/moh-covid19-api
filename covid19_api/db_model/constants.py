@@ -34,12 +34,14 @@ ROW_VERSION = {
 
     'deaths_malaysia': {
         hash_column_data(['date','deaths_new']): 1,
-        hash_column_data(['date','deaths_new','deaths_new_dod','deaths_bid','deaths_bid_dod']): 2
+        hash_column_data(['date','deaths_new','deaths_new_dod','deaths_bid','deaths_bid_dod']): 2,
+        hash_column_data(['date','deaths_new','deaths_new_dod','deaths_bid','deaths_bid_dod','deaths_pvax','deaths_fvax']): 3
     },
 
     'deaths_state': {
         hash_column_data(['date','state','deaths_new']): 1,
         hash_column_data(['date','state','deaths_new','deaths_new_dod','deaths_bid','deaths_bid_dod']): 2,
+        hash_column_data(['date','state','deaths_new','deaths_new_dod','deaths_bid','deaths_bid_dod','deaths_pvax','deaths_fvax']): 3
     },
 
     'hospital': {
@@ -105,12 +107,14 @@ ROW_VERSION = {
     'vax_malaysia': {
         hash_column_data(['date', 'dose1_daily', 'dose2_daily', 'total_daily', 'dose1_cumul', 'dose2_cumul', 'total_cumul']): 1,
         hash_column_data(['date', 'daily_partial', 'daily_full', 'daily', 'cumul_partial', 'cumul_full', 'cumul', 'pfizer1', 'pfizer2', 'sinovac1', 'sinovac2', 'astra1', 'astra2', 'pending']): 2,
-        hash_column_data(['date', 'daily_partial', 'daily_full', 'daily', 'cumul_partial', 'cumul_full', 'cumul', 'cumul_partial_child', 'cumul_full_child', 'pfizer1', 'pfizer2', 'sinovac1', 'sinovac2', 'astra1', 'astra2', 'cansino', 'pending']): 3
+        hash_column_data(['date', 'daily_partial', 'daily_full', 'daily', 'cumul_partial', 'cumul_full', 'cumul', 'cumul_partial_child', 'cumul_full_child', 'pfizer1', 'pfizer2', 'sinovac1', 'sinovac2', 'astra1', 'astra2', 'cansino', 'pending']): 3,
+        hash_column_data(['date', 'daily_partial', 'daily_full', 'daily', 'daily_partial_child', 'daily_full_child', 'cumul_partial', 'cumul_full', 'cumul', 'cumul_partial_child', 'cumul_full_child', 'pfizer1', 'pfizer2', 'sinovac1', 'sinovac2', 'astra1', 'astra2', 'cansino', 'pending']): 4
     },
     'vax_state': {
         hash_column_data(['date', 'state', 'dose1_daily', 'dose2_daily', 'total_daily', 'dose1_cumul', 'dose2_cumul', 'total_cumul']): 1,
         hash_column_data(['date', 'state', 'daily_partial', 'daily_full', 'daily', 'cumul_partial', 'cumul_full', 'cumul', 'pfizer1', 'pfizer2', 'sinovac1', 'sinovac2', 'astra1', 'astra2', 'pending']): 2,
-        hash_column_data(['date', 'state', 'daily_partial', 'daily_full', 'daily', 'cumul_partial', 'cumul_full', 'cumul', 'cumul_partial_child', 'cumul_full_child', 'pfizer1', 'pfizer2', 'sinovac1', 'sinovac2', 'astra1', 'astra2', 'cansino', 'pending']): 3
+        hash_column_data(['date', 'state', 'daily_partial', 'daily_full', 'daily', 'cumul_partial', 'cumul_full', 'cumul', 'cumul_partial_child', 'cumul_full_child', 'pfizer1', 'pfizer2', 'sinovac1', 'sinovac2', 'astra1', 'astra2', 'cansino', 'pending']): 3,
+        hash_column_data(['date', 'state', 'daily_partial', 'daily_full', 'daily', 'daily_partial_child', 'daily_full_child', 'cumul_partial', 'cumul_full', 'cumul', 'cumul_partial_child', 'cumul_full_child', 'pfizer1', 'pfizer2', 'sinovac1', 'sinovac2', 'astra1', 'astra2', 'cansino', 'pending']): 4
     }
 }
 
@@ -131,11 +135,13 @@ DATA_CONVERSION_DICT = {
     },
     'deaths_malaysia': {
         1: {'date': convert_date, 'deaths_new': int},
-        2: {'date': convert_date, 'deaths_new': int, 'deaths_new_dod': int, 'deaths_bid': int,'deaths_bid_dod': int}
+        2: {'date': convert_date, 'deaths_new': int, 'deaths_new_dod': int, 'deaths_bid': int,'deaths_bid_dod': int},
+        3: {'date': convert_date, 'deaths_new': int, 'deaths_new_dod': int, 'deaths_bid': int,'deaths_bid_dod': int,'deaths_pvax': int,'deaths_fvax': int}
     },
     'deaths_state': {
         1: {'date': convert_date, 'deaths_new': int},
-        2: {'date': convert_date, 'deaths_new': int, 'deaths_new_dod': int, 'deaths_bid': int, 'deaths_bid_dod': int}
+        2: {'date': convert_date, 'deaths_new': int, 'deaths_new_dod': int, 'deaths_bid': int, 'deaths_bid_dod': int},
+        3: {'date': convert_date, 'deaths_new': int, 'deaths_new_dod': int, 'deaths_bid': int,'deaths_bid_dod': int,'deaths_pvax': int,'deaths_fvax': int}
     },
     'hospital': {
         1: {'date': convert_date, 'beds': int, 'beds_noncrit': int, 'admitted_pui': int, 'admitted_covid': int, 'admitted_total': int, 'discharged_pui': int, 'discharged_covid': int, 'discharged_total': int, 'hosp_covid': int, 'hosp_pui': int, 'hosp_noncovid': int},
@@ -187,12 +193,14 @@ DATA_CONVERSION_DICT = {
     'vax_malaysia': {
         1: {'date': convert_date, 'dose1_daily': int, 'dose2_daily': int, 'total_daily': int, 'dose1_cumul': int, 'dose2_cumul': int, 'total_cumul': int},
         2: {'date': convert_date, 'daily_partial': int, 'daily_full': int, 'daily': int, 'cumul_partial': int, 'cumul_full': int, 'cumul': int, 'pfizer1': int, 'pfizer2': int, 'sinovac1': int, 'sinovac2': int, 'astra1': int, 'astra2': int, 'pending': int},
-        3: {'date': convert_date, 'daily_partial': int, 'daily_full': int, 'daily': int, 'cumul_partial': int, 'cumul_full': int, 'cumul': int, 'cumul_partial_child': int, 'cumul_full_child': int, 'pfizer1': int, 'pfizer2': int, 'sinovac1': int, 'sinovac2': int, 'astra1': int, 'astra2': int, 'cansino': int, 'pending': int}
+        3: {'date': convert_date, 'daily_partial': int, 'daily_full': int, 'daily': int, 'cumul_partial': int, 'cumul_full': int, 'cumul': int, 'cumul_partial_child': int, 'cumul_full_child': int, 'pfizer1': int, 'pfizer2': int, 'sinovac1': int, 'sinovac2': int, 'astra1': int, 'astra2': int, 'cansino': int, 'pending': int},
+        4: {'date': convert_date, 'daily_partial': int, 'daily_full': int, 'daily': int, 'daily_partial_child': int, 'daily_full_child': int, 'cumul_partial': int, 'cumul_full': int, 'cumul': int, 'cumul_partial_child': int, 'cumul_full_child': int, 'pfizer1': int, 'pfizer2': int, 'sinovac1': int, 'sinovac2': int, 'astra1': int, 'astra2': int, 'cansino': int, 'pending': int}
     },
     'vax_state': {
         1: {'date': convert_date, 'dose1_daily': int, 'dose2_daily': int, 'total_daily': int, 'dose1_cumul': int, 'dose2_cumul': int, 'total_cumul': int},
         2: {'date': convert_date, 'daily_partial': int, 'daily_full': int, 'daily': int, 'cumul_partial': int, 'cumul_full': int, 'cumul': int, 'pfizer1': int, 'pfizer2': int, 'sinovac1': int, 'sinovac2': int, 'astra1': int, 'astra2': int, 'pending': int},
-        3: {'date': convert_date, 'daily_partial': int, 'daily_full': int, 'daily': int, 'cumul_partial': int, 'cumul_full': int, 'cumul': int, 'cumul_partial_child': int, 'cumul_full_child': int, 'pfizer1': int, 'pfizer2': int, 'sinovac1': int, 'sinovac2': int, 'astra1': int, 'astra2': int, 'cansino': int, 'pending': int}
+        3: {'date': convert_date, 'daily_partial': int, 'daily_full': int, 'daily': int, 'cumul_partial': int, 'cumul_full': int, 'cumul': int, 'cumul_partial_child': int, 'cumul_full_child': int, 'pfizer1': int, 'pfizer2': int, 'sinovac1': int, 'sinovac2': int, 'astra1': int, 'astra2': int, 'cansino': int, 'pending': int},
+        4: {'date': convert_date, 'daily_partial': int, 'daily_full': int, 'daily': int, 'daily_partial_child': int, 'daily_full_child': int, 'cumul_partial': int, 'cumul_full': int, 'cumul': int, 'cumul_partial_child': int, 'cumul_full_child': int, 'pfizer1': int, 'pfizer2': int, 'sinovac1': int, 'sinovac2': int, 'astra1': int, 'astra2': int, 'cansino': int, 'pending': int}
     }
 }
 
@@ -210,11 +218,14 @@ SUPPORTED_CSV_DATA = {
     ],
 
     'deaths_malaysia': [
-        hash_column_data(['date','deaths_new']), hash_column_data(['date','deaths_new','deaths_new_dod','deaths_bid','deaths_bid_dod'])
+        hash_column_data(['date','deaths_new']), hash_column_data(['date','deaths_new','deaths_new_dod','deaths_bid','deaths_bid_dod']),
+        hash_column_data(['date','deaths_new','deaths_bid','deaths_new_dod','deaths_bid_dod','deaths_pvax','deaths_fvax'])
     ],
 
     'deaths_state': [
-        hash_column_data(['date','state','deaths_new']), hash_column_data(['date','state','deaths_new','deaths_new_dod','deaths_bid','deaths_bid_dod'])
+        hash_column_data(['date','state','deaths_new']), hash_column_data(['date','state','deaths_new','deaths_new_dod','deaths_bid','deaths_bid_dod']),
+        hash_column_data(['date','state','deaths_new','deaths_bid','deaths_new_dod','deaths_bid_dod','deaths_pvax','deaths_fvax'])
+
     ],
 
     'hospital': [
@@ -277,12 +288,14 @@ SUPPORTED_CSV_DATA = {
     'vax_malaysia': [
         hash_column_data(['date', 'dose1_daily', 'dose2_daily', 'total_daily', 'dose1_cumul', 'dose2_cumul', 'total_cumul']),
         hash_column_data(['date', 'daily_partial', 'daily_full', 'daily', 'cumul_partial', 'cumul_full', 'cumul', 'pfizer1', 'pfizer2', 'sinovac1', 'sinovac2', 'astra1', 'astra2', 'pending']),
-        hash_column_data(['date', 'daily_partial', 'daily_full', 'daily', 'cumul_partial', 'cumul_full', 'cumul', 'cumul_partial_child','cumul_full_child', 'pfizer1', 'pfizer2', 'sinovac1', 'sinovac2', 'astra1', 'astra2', 'cansino', 'pending'])
+        hash_column_data(['date', 'daily_partial', 'daily_full', 'daily', 'cumul_partial', 'cumul_full', 'cumul', 'cumul_partial_child','cumul_full_child', 'pfizer1', 'pfizer2', 'sinovac1', 'sinovac2', 'astra1', 'astra2', 'cansino', 'pending']),
+        hash_column_data(['date','daily_partial','daily_full','daily','daily_partial_child','daily_full_child','cumul_partial','cumul_full','cumul','cumul_partial_child','cumul_full_child','pfizer1','pfizer2','sinovac1','sinovac2','astra1','astra2','cansino','pending'])
     ],
     'vax_state': [
         hash_column_data(['date', 'state', 'dose1_daily', 'dose2_daily', 'total_daily', 'dose1_cumul', 'dose2_cumul', 'total_cumul']),
         hash_column_data(['date', 'state', 'daily_partial', 'daily_full', 'daily', 'cumul_partial', 'cumul_full', 'cumul', 'pfizer1', 'pfizer2', 'sinovac1', 'sinovac2', 'astra1', 'astra2', 'pending']),
-        hash_column_data(['date', 'state', 'daily_partial', 'daily_full', 'daily', 'cumul_partial', 'cumul_full', 'cumul', 'cumul_partial_child','cumul_full_child', 'pfizer1', 'pfizer2', 'sinovac1', 'sinovac2', 'astra1', 'astra2', 'cansino', 'pending'])
+        hash_column_data(['date', 'state', 'daily_partial', 'daily_full', 'daily', 'cumul_partial', 'cumul_full', 'cumul', 'cumul_partial_child','cumul_full_child', 'pfizer1', 'pfizer2', 'sinovac1', 'sinovac2', 'astra1', 'astra2', 'cansino', 'pending']),
+        hash_column_data(['date','state','daily_partial', 'daily_full', 'daily', 'daily_partial_child', 'daily_full_child', 'cumul_partial', 'cumul_full', 'cumul', 'cumul_partial_child', 'cumul_full_child', 'pfizer1', 'pfizer2', 'sinovac1', 'sinovac2', 'astra1', 'astra2', 'cansino', 'pending'])
     ]
 }
 

@@ -85,6 +85,8 @@ class DeathsMalaysia(db.Model, object):
     deaths_new_dod: int = Column(Integer, comment='New deaths for the reported date')
     deaths_bid: int = Column(Integer, comment='New deaths for the reported date')
     deaths_bid_dod: int = Column(Integer, comment='New deaths for the reported date')
+    deaths_pvax: int = Column(Integer, comment='Number of deaths with partial vaccination')
+    deaths_fvax: int = Column(Integer, comment='Number of deaths with full vaccination')
 
     def __init__(self, **kwargs) -> None:
         for k, v in kwargs.items():
@@ -105,6 +107,8 @@ class DeathsState(db.Model, object):
     deaths_new_dod: int = Column(Integer, comment='New deaths for the reported date')
     deaths_bid: int = Column(Integer, comment='New deaths for the reported date')
     deaths_bid_dod: int = Column(Integer, comment='New deaths for the reported date')
+    deaths_pvax: int = Column(Integer, comment='Number of deaths with partial vaccination')
+    deaths_fvax: int = Column(Integer, comment='Number of deaths with full vaccination')
 
     def __init__(self, **kwargs) -> None:
         for k, v in kwargs.items():
@@ -480,6 +484,8 @@ class VaxMalaysia(db.Model, object):
     daily_partial: int = Column(Integer, comment='1st doses (for double-dose vaccines) delivered between 0000 and 2359 on date')
     daily_full: int = Column(Integer, comment='2nd doses (for single-dose vaccines) and 1-dose vaccines (e.g. Cansino) delivered between 0000 and 2359 on date.')
     daily: int = Column(Integer, comment='Total daily delivered between 0000 and 2359 on date')
+    daily_partial_child: int = Column(Integer, comment='1st doses (for double-dose vaccines) delivered for children between 0000 and 2359 on date')
+    daily_full_child: int = Column(Integer, comment='2nd doses (for single-dose vaccines) and 1-dose vaccines (e.g. Cansino) delivered for children between 0000 and 2359 on date.')
     cumul_partial: int = Column(Integer, comment='Sum of cumulative partial doses delivered until row date')
     cumul_full: int = Column(Integer, comment='Sum of cumulative full doses delivered until row date')
     cumul: int = Column(Integer, comment='Total cumulative doses delivered until row date')
@@ -510,6 +516,8 @@ class VaxState(db.Model, object):
     daily_partial: int = Column(Integer, comment='1st doses (for double-dose vaccines) delivered between 0000 and 2359 on date')
     daily_full: int = Column(Integer, comment='2nd doses (for single-dose vaccines) and 1-dose vaccines (e.g. Cansino) delivered between 0000 and 2359 on date.')
     daily: int = Column(Integer, comment='Total daily delivered between 0000 and 2359 on date')
+    daily_partial_child: int = Column(Integer, comment='1st doses (for double-dose vaccines) delivered for children between 0000 and 2359 on date')
+    daily_full_child: int = Column(Integer, comment='2nd doses (for single-dose vaccines) and 1-dose vaccines (e.g. Cansino) delivered for children between 0000 and 2359 on date')
     cumul_partial: int = Column(Integer, comment='Sum of cumulative partial doses delivered until row date')
     cumul_full: int = Column(Integer, comment='Sum of cumulative full doses delivered until row date')
     cumul: int = Column(Integer, comment='Total cumulative doses delivered until row date')
