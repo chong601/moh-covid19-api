@@ -6,6 +6,10 @@ Jokes aside, this project provides [Ministry of Health Malaysia COVID-19 statist
 
 Alpha-version of the API is available at http://moh-covid19-api.chong601.cloud/api/alpha/ui.
 
+Latest version of API on `master` is `0.3-alpha`.
+
+Latest version of API on http://moh-covid19-api.chong601.cloud/api/alpha/ui is `0.2-alpha`.
+
 # Things to work on
 - [phase 2 in-progress] Better database model (the source data makes it difficult to build one)
 - [in progress] Complete the initial REST API implementation
@@ -29,6 +33,7 @@ This API is compatible with all COVID-19 data from 2021-08-11 onwards.
 | icu | Per-state ICU data | /epidemic/icu<br>/epidemic/icu/{state}<br>/epidemic/icu/{state}/{date} | Done |
 | pkrc | Per-state PKRC data | /epidemic/pkrc<br>/epidemic/pkrc/{state}<br>/epidemic/pkrc/{state}/{date} | Done |
 | tests_malaysia | Country-wide COVID-19 testing data | /epidemic/tests_malaysia<br>/epidemic/tests_malaysia/{date} | Done |
+| linelist_deaths | Country-wide detailed deaths | /epidemic/linelist_deaths<br>/epidemic/linelist_deaths/partial<br>/epidemic/linelist_deaths/full | In progress |
 
 ### MySejahtera data
 | Name | Description | URL endpoint | Status |
@@ -66,6 +71,7 @@ This API is compatible with all COVID-19 data from 2021-08-11 onwards.
   - [x] Per-state ICU statistics
   - [x] Per-state PKRC statistics
   - [x] COVID-19 testing
+  - [X] Line-list deaths
 - [x] MySejahtera data
   - [x] Check-ins by time
   - [x] Country-wide check-ins
