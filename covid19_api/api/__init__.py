@@ -37,12 +37,16 @@ from .namespaces.repository import api as repository_api
 from .namespaces.mysejahtera import api as mysejahtera_api
 from .namespaces.static import api as static_api
 from .namespaces.registration import api as vaxreg_api
-from .namespaces.vaccination import api as vax_api
+from .namespaces.vaccination_report import api as vax_report_api
+from .namespaces.vaccination_data import api as vax_data_api
+from .namespaces.misc import api as misc_api
+
 
 # Create alpha blueprint
 alpha_blueprint = Blueprint('api', __name__, url_prefix='/api/alpha')
 
 # Create Flask-RestX Api
+# Put Swagger UI on a separate /ui path, don't "take over" the root path
 api = Api(alpha_blueprint, title='MOH COVID-19 REST API', version='0.2-alpha', description='Swagger interface for MOH COVID-19 REST API', doc='/ui/', ordered=True)
 
 # Add namespaces
@@ -51,7 +55,8 @@ api.add_namespace(repository_api)
 api.add_namespace(mysejahtera_api)
 api.add_namespace(static_api)
 api.add_namespace(vaxreg_api)
-api.add_namespace(vax_api)
-
+api.add_namespace(vax_report_api)
+api.add_namespace(vax_data_api)
+api.add_namespace(misc_api)
 # Register blueprint
 app.register_blueprint(alpha_blueprint)
